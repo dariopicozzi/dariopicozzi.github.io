@@ -3,52 +3,197 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base title="Dario Picozzi">
+  <script is:inline>document.documentElement.classList.add('js-reveal')</script>
   <section class="hero">
-    <div class="card">
-      <h1>Dario Picozzi</h1>
-      <p>
-        I am an EPSRC Postdoctoral Prize Fellow in the Department of Physics and Astronomy at
-        University College London (UCL). Previously, I held an EPSRC Research Fellowship at the
-        London Centre for Nanotechnology. My work sits at the intersection of geometry, physics
-        and information. It spans quantum computing, where I have worked on quantum algorithms,
-        quantum circuits and symmetry-adapted encodings to simulate physical processes, for
-        instance molecular electronic structure and electron–molecule scattering; the
-        information geometry of machine learning; and theoretical physics, including quantum
-        gravity, holography and foundational questions.
-      </p>
-      <p>
-        Outside academia, I am co-founder and managing director of{' '}
-        <a href="https://tanuki.ai">Tanuki</a>, an AI-powered computational simulation platform
-        for science and engineering. Through Tanuki, we contribute the simulation of sea-ice
-        mechanics to Re-thickening Arctic Sea Ice (RASI), an ARIA-funded, University of
-        Cambridge-led programme researching whether Arctic sea ice can be re-thickened to slow
-        its loss.
-      </p>
+    <div class="hero-inner">
+      <div class="intro">
+        <h1 class="sr-only">Dario Picozzi</h1>
+        <p>
+          I am an EPSRC Postdoctoral Prize Fellow in the Department of Physics and Astronomy at{' '}
+          <a href="https://www.ucl.ac.uk/">University College London</a> (UCL). Previously, I held
+          an EPSRC Research Fellowship at the{' '}
+          <a href="https://www.london-nano.com/">London Centre for Nanotechnology</a>.
+        </p>
+      </div>
+    </div>
+
+    <div class="hero-figure">
+      <canvas id="home-bg" aria-hidden="true"></canvas>
+    </div>
+
+    <div class="hero-inner">
+      <div class="intro">
+        <p>
+          My work sits at the intersection of geometry, physics and information. It spans quantum
+          computing, where I have worked on quantum algorithms, quantum circuits and
+          symmetry-adapted encodings to simulate physical processes, for instance molecular
+          electronic structure and electron–molecule scattering; the information geometry of
+          machine learning; and theoretical physics, including quantum gravity, holography and
+          foundational questions.
+        </p>
+        <p>
+          Outside academia, I am co-founder and managing director of{' '}
+          <a href="https://tanuki.ai">Tanuki</a>, an AI-powered computational simulation platform
+          for science and engineering. Through Tanuki, we contribute the simulation of sea-ice
+          mechanics to Re-thickening Arctic Sea Ice (RASI), an ARIA-funded, University of
+          Cambridge-led programme researching whether Arctic sea ice can be re-thickened to slow
+          its loss.
+        </p>
+      </div>
     </div>
   </section>
 </Base>
 
 <style>
   .hero {
+    position: relative;
     min-height: calc(100dvh - 9rem);
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
     padding-block: clamp(2rem, 6vh, 4.5rem);
+    overflow: hidden;
+  }
+  /* the animation is a full-bleed background on desktop (out of flow, so its
+     position between the two text blocks doesn't affect the desktop layout).
+     The wrapper is layout-transparent here so the canvas fills the hero. */
+  .hero-figure { display: contents; }
+  #home-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  /* legibility scrim: darkens the text side, leaves the animation side clear */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      95deg,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--bg) 86%, transparent) 30%,
+      transparent 60%
+    );
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: var(--wide-measure);
+    margin-inline: auto;
     padding-inline: 1.25rem;
   }
-  .card {
-    max-width: 46rem;
-    margin-inline: auto;
-    padding: clamp(1.8rem, 4vw, 3.2rem);
-    background: var(--bg-raised);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-  }
-  h1 {
-    margin: 0.15em 0 0.6em;
+  .intro { max-width: 33rem; }
+  .intro h1 {
+    margin: 0 0 0.55em;
     color: var(--ink);
+    font-size: clamp(3rem, 7vw, 4.8rem);
   }
-  @media (max-width: 560px) {
-    .card { padding: 1.6rem 1.35rem; }
+  .intro p {
+    color: var(--ink-soft);
+    /* inherits the site base size (1.0625rem) so the homepage matches the
+       other pages; only the line-height is nudged for the wider measure */
+    line-height: 1.7;
+    margin-bottom: 1.9em;
+    text-shadow: 0 1px 18px var(--bg), 0 0 3px var(--bg);
+  }
+  .intro a { color: var(--ink); font-weight: 500; }
+  .intro a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* mobile: the animation sits in the flow, between the first paragraph and
+     the rest (DOM order is block-a, canvas, block-b) */
+  @media (max-width: 767px) {
+    .hero {
+      justify-content: flex-start;
+      min-height: 0;
+      padding-block: clamp(1.5rem, 4vh, 3rem) 0;
+      overflow: visible;
+    }
+    .hero::after { display: none; }
+    /* the wrapper starts collapsed so the paragraphs reveal as one
+       uninterrupted stack; once the first paragraph finishes it opens,
+       clipping the canvas into view. the canvas keeps a constant size, so the
+       orbital renders at fixed proportions and never distorts as the band opens */
+    .hero-figure {
+      display: block;
+      height: 0;
+      margin-block: 0;
+      overflow: hidden;
+      flex-shrink: 0;
+      transition:
+        height 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+        margin-block 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .hero.figure-in .hero-figure {
+      height: 52vh;
+      margin-block: 1.9rem;
+    }
+    #home-bg {
+      position: relative;
+      inset: auto;
+      width: 100%;
+      height: 52vh;
+    }
+    .intro { max-width: none; }
+    .intro p { text-shadow: none; }
+  }
+
+  /* reduced motion: no choreography — the figure is simply present */
+  @media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+    .hero-figure {
+      height: 52vh;
+      margin-block: 1.9rem;
+      transition: none;
+    }
   }
 </style>
+
+<style is:global>
+  /* reveal gating + per-token animation (spans are created at runtime) */
+  html.js-reveal .intro { opacity: 0; }
+  @keyframes introReveal {
+    from { opacity: 0; transform: translateY(0.5em); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .intro .intro-rv {
+    display: inline-block;
+    animation: introReveal 1s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.js-reveal .intro { opacity: 1; }
+  }
+</style>
+
+<script>
+  import { initHomeBackground } from '../scripts/homeBackground.js';
+  import { revealBlock } from '../scripts/introReveal.js';
+  const canvas = document.getElementById('home-bg');
+  if (canvas) initHomeBackground(canvas);
+  const hero = document.querySelector('.hero');
+  if (hero) {
+    const blocks = [...hero.querySelectorAll('.intro')];
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const showFigure = () => hero.classList.add('figure-in');
+    if (reduced) {
+      blocks.forEach((b) => (b.style.opacity = '1'));
+      showFigure();
+    } else if (window.innerWidth < 768 && blocks.length > 1) {
+      // mobile: first paragraph → hero appears → the rest below it (no sliding)
+      const t1 = revealBlock(blocks[0]);
+      setTimeout(showFigure, t1 * 1000);
+      setTimeout(() => {
+        for (let i = 1; i < blocks.length; i++) revealBlock(blocks[i]);
+      }, (t1 + 1.4) * 1000);
+    } else {
+      // desktop: continuous reveal over the always-on background
+      let t = 0;
+      blocks.forEach((b) => (t = revealBlock(b, t)));
+      showFigure();
+    }
+  }
+</script>
