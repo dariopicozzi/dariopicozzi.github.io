@@ -2,11 +2,13 @@
 import Base from '../layouts/Base.astro';
 
 /*
- * The form posts to Formspree, which relays messages by email without the
- * address ever appearing in the site's source. Replace FORMSPREE_ID with the
- * form ID from formspree.io (Forms → New form → copy the 8-character ID).
+ * The form posts to a small PHP handler on my own Hostinger web hosting, which
+ * relays the message to a private inbox by email. The destination address never
+ * appears in the page source, and no third-party form service is involved.
+ * The handler itself lives on the server (see /server/contact.php in the repo,
+ * which is gitignored) — only this public endpoint URL ships to the site.
  */
-const FORMSPREE_ID = 'mojgndke';
+const ENDPOINT = 'https://form.dariopicozzi.com/contact.php';
 ---
 
 <Base title="Contact · Dario Picozzi">
@@ -20,7 +22,7 @@ const FORMSPREE_ID = 'mojgndke';
       </p>
     </header>
 
-    <form action={`https://formspree.io/f/${FORMSPREE_ID}`} method="POST">
+    <form id="contact-form" action={ENDPOINT} method="POST">
       <label>
         <span>Name</span>
         <input type="text" name="name" required autocomplete="name" />
@@ -33,7 +35,16 @@ const FORMSPREE_ID = 'mojgndke';
         <span>Message</span>
         <textarea name="message" rows="7" required></textarea>
       </label>
+      <!-- honeypot: real people leave this blank; bots tend to fill it.
+           Deliberately not called "website" — password managers autofill that,
+           which would silently discard a genuine message. -->
+      <div class="hp" aria-hidden="true">
+        <label>Leave this field empty
+          <input type="text" name="hp_ref" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
       <button type="submit">Send message</button>
+      <p id="form-status" role="status" aria-live="polite"></p>
     </form>
   </article>
 </Base>
@@ -80,4 +91,51 @@ const FORMSPREE_ID = 'mojgndke';
     color: var(--bg);
     border-color: var(--ink);
   }
+  button:disabled { opacity: 0.6; cursor: default; }
+  button:disabled:hover { background: transparent; color: var(--ink); border-color: var(--ink-faint); }
+
+  /* honeypot — kept out of view and out of the tab order */
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  #form-status { margin: 0; min-height: 1.2em; font-size: 0.92rem; }
+  #form-status.is-ok { color: var(--ink); }
+  #form-status.is-error { color: #e5736a; }
 </style>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  if (form) {
+    const status = document.getElementById('form-status')!;
+    const button = form.querySelector('button')!;
+    const label = button.textContent;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.className = '';
+      status.textContent = '';
+      button.disabled = true;
+      button.textContent = 'Sending…';
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new URLSearchParams(new FormData(form) as any),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          form.reset();
+          status.classList.add('is-ok');
+          status.textContent = 'Thanks — your message has been sent.';
+        } else {
+          status.classList.add('is-error');
+          status.textContent = data.error || 'Something went wrong. Please try again.';
+        }
+      } catch {
+        status.classList.add('is-error');
+        status.textContent = 'Could not reach the server. Please try again shortly.';
+      } finally {
+        button.disabled = false;
+        button.textContent = label;
+      }
+    });
+  }
+</script>

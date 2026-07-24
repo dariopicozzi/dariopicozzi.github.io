@@ -3,6 +3,10 @@ dist/
 # generated types
 .astro/
 
+# server-side contact handler — lives on Hostinger, never in this public repo
+# (may hold a recipient address / SMTP credentials)
+/server/
+
 # dependencies
 node_modules/
 
