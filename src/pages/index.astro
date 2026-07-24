@@ -172,17 +172,31 @@ import Base from '../layouts/Base.astro';
 <script>
   import { initHomeBackground } from '../scripts/homeBackground.js';
   import { revealBlock } from '../scripts/introReveal.js';
+  // The figure is an enhancement: the reveal below must never depend on it, or
+  // a failure would leave the text stuck behind its opacity gate and the page
+  // would render blank. If it cannot run, drop the canvas and read as text.
   const canvas = document.getElementById('home-bg');
-  if (canvas) initHomeBackground(canvas);
+  let hasFigure = false;
+  if (canvas) {
+    try {
+      hasFigure = initHomeBackground(canvas);
+    } catch {
+      hasFigure = false;
+    }
+    if (!hasFigure) canvas.remove();
+  }
+
   const hero = document.querySelector('.hero');
   if (hero) {
     const blocks = [...hero.querySelectorAll('.intro')];
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const showFigure = () => hero.classList.add('figure-in');
+    const showFigure = () => {
+      if (hasFigure) hero.classList.add('figure-in');
+    };
     if (reduced) {
       blocks.forEach((b) => (b.style.opacity = '1'));
       showFigure();
-    } else if (window.innerWidth < 768 && blocks.length > 1) {
+    } else if (window.innerWidth < 768 && blocks.length > 1 && hasFigure) {
       // mobile: first paragraph → hero appears → the rest below it (no sliding)
       const t1 = revealBlock(blocks[0]);
       setTimeout(showFigure, t1 * 1000);
@@ -190,7 +204,7 @@ import Base from '../layouts/Base.astro';
         for (let i = 1; i < blocks.length; i++) revealBlock(blocks[i]);
       }, (t1 + 1.4) * 1000);
     } else {
-      // desktop: continuous reveal over the always-on background
+      // desktop, and any case with no figure: one continuous reveal
       let t = 0;
       blocks.forEach((b) => (t = revealBlock(b, t)));
       showFigure();
