@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Software · Dario Picozzi">
+  <article class="measure">
+    <header class="page-head">
+      <h1>Software</h1>
+      <p class="lede">Open-source code accompanying the research.</p>
+    </header>
+
+    <section class="project">
+      <img
+        class="logo"
+        src="/quantumsymmetry-logo.png"
+        alt="QuantumSymmetry"
+        width="300"
+        loading="lazy"
+      />
+      <h2 class="sr-only">QuantumSymmetry</h2>
+      <p class="install"><code>pip install quantumsymmetry</code></p>
+      <p>
+        A Python package for symmetry-adapted quantum simulation of molecules. Give it a
+        molecular geometry and a basis set, and it automatically detects the molecule's
+        Boolean symmetry group and constructs symmetry-adapted qubit operators, reducing
+        the number of qubits needed to simulate the molecule. It integrates
+        with <a href="https://pyscf.org">PySCF</a>, <a href="https://quantumai.google/openfermion">OpenFermion</a> and <a href="https://www.ibm.com/quantum/qiskit">Qiskit</a>.
+      </p>
+      <p>
+        Since v0.3.0 it also includes a hardware-efficient
+        universal ansatz with linear two-qubit-gate scaling whose quantum geometric metric
+        is exactly diagonal in closed form, supporting natural-gradient VQE, real- and
+        imaginary-time evolution and Haar sampling.
+      </p>
+      <p class="links">
+        <a href="https://github.com/dariopicozzi/quantumsymmetry">GitHub</a>
+        <a href="https://pypi.org/project/quantumsymmetry/">PyPI</a>
+      </p>
+      <details class="cite">
+        <summary>How to cite</summary>
+        <p>
+          D. Picozzi and J. Tennyson,
+          <em>Symmetry-adapted encodings for qubit number reduction by point-group and
+          other Boolean symmetries</em>, Quantum Sci. Technol. <strong>8</strong> 035026
+          (2023). <a href="https://doi.org/10.1088/2058-9565/acd86c">doi:10.1088/2058-9565/acd86c</a>
+        </p>
+      </details>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .page-head { margin-block: 3.2rem 2.6rem; }
+  .lede { color: var(--ink-soft); }
+  .project { margin-block: 2.8rem; padding-top: 1.8rem; border-top: 1px solid var(--line); }
+  .logo {
+    display: block;
+    max-width: min(300px, 70vw);
+    height: auto;
+    margin-bottom: 1.4rem;
+  }
+  .install { margin: -0.3em 0 1em; }
+  .install code { font-size: 0.95rem; padding: 0.3em 0.7em; }
+  .links { display: flex; gap: 1.2rem; font-weight: 450; }
+  .cite { margin-top: 1rem; font-size: 0.92rem; color: var(--ink-soft); }
+  .cite summary { cursor: pointer; color: var(--ink-faint); }
+  .cite p { margin-top: 0.6em; }
+</style>

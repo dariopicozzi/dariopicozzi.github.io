@@ -1,0 +1,137 @@
+---
+import Base from '../layouts/Base.astro';
+
+const education = [
+  {
+    years: '2020–2025',
+    degree: 'PhD in Physics',
+    place: 'University College London',
+    detail: 'Thesis: <em>Qubits, Symmetry and Geometry: Quantum Algorithms for Molecular Physics</em>. Supervisor: Prof. Jonathan Tennyson.',
+  },
+  {
+    years: '2018–2020',
+    degree: 'MSc in Quantum Fields and Fundamental Forces',
+    place: 'Imperial College London',
+    detail: 'Thesis: <em>Quantum Informational Perspectives on Quantum Gravity and the Gauge/Gravity Duality</em>. Supervisor: Prof. Jonathan J. Halliwell.',
+  },
+  {
+    years: '2017–2018',
+    degree: 'Graduate Diploma in Mathematics',
+    place: "King's College London",
+    detail: 'First Class (Distinction).',
+  },
+  {
+    years: '2012–2015',
+    degree: 'BA in Philosophy',
+    place: "King's College London",
+    detail: 'Upper Second Class.',
+  },
+];
+
+const awards = [
+  {
+    years: '2025–present',
+    title: 'EPSRC Postdoctoral Prize Fellowship',
+    place: 'University College London',
+    detail: 'Grant EP/W524335/1.',
+  },
+  {
+    years: '2023–2024',
+    title: 'EPSRC Research Fellowship',
+    place: 'London Centre for Nanotechnology',
+    detail: 'EPSRC Centre for Doctoral Training in Delivering Quantum Technologies. Grant EP/S021582/1.',
+  },
+  {
+    years: '2020–2025',
+    title: 'EPSRC Industrial CASE (iCASE) Studentship',
+    place: 'University College London',
+    detail: 'Doctoral funding. Grant EP/T517793/1.',
+  },
+];
+---
+
+<Base title="Background · Dario Picozzi">
+  <article class="measure">
+    <header class="page-head">
+      <h1>Background</h1>
+    </header>
+
+    <section>
+      <h2>Teaching and supervision</h2>
+      <p>
+        I have supervised MSc research projects in quantum technologies and taught across the
+        core physics curriculum at UCL, spanning mathematical methods, computational physics,
+        and molecular physics.
+      </p>
+    </section>
+
+    <section>
+      <h2>Fellowships and awards</h2>
+      <ul class="entries">
+        {
+          awards.map((a) => (
+            <li>
+              <span class="years">{a.years}</span>
+              <div class="body">
+                <span class="lead">{a.title}</span>
+                <span class="place">{a.place}</span>
+                <span class="detail">{a.detail}</span>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2>Education</h2>
+      <ul class="entries">
+        {
+          education.map((e) => (
+            <li>
+              <span class="years">{e.years}</span>
+              <div class="body">
+                <span class="lead">{e.degree}</span>
+                <span class="place">{e.place}</span>
+                <span class="detail" set:html={e.detail} />
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .page-head { margin-block: 3.2rem 2.2rem; }
+  section { margin-block: 2.8rem; }
+  h2 {
+    font-size: 1.35rem;
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  section p { color: var(--ink-soft); }
+  .entries { list-style: none; margin: 0; padding: 0; }
+  .entries li {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr;
+    gap: 1.2rem;
+    padding-block: 0.9rem;
+  }
+  .entries li + li { border-top: 1px solid var(--line); }
+  .years {
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    padding-top: 0.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .body { display: flex; flex-direction: column; gap: 0.1rem; }
+  .lead { color: var(--ink); font-weight: 400; }
+  .place { color: var(--ink-soft); font-size: 0.95rem; }
+  .detail { color: var(--ink-faint); font-size: 0.9rem; }
+  @media (max-width: 560px) {
+    .entries li { grid-template-columns: 1fr; gap: 0.25rem; }
+  }
+</style>

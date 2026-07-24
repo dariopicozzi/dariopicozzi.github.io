@@ -1,0 +1,102 @@
+---
+import Base from '../layouts/Base.astro';
+
+const talks = [
+  {
+    when: 'Jun 2026',
+    title: 'Quantum Computing for Quantum Chemistry seminar (invited talk)',
+    place: 'Yusuf Hamied Department of Chemistry, University of Cambridge',
+    href: 'https://thom.group.ch.cam.ac.uk/quantum-computing-quantum-chemistry-discussion-group-qcqcdg',
+  },
+  {
+    when: 'Oct 2025',
+    title: 'Quantum Computing in Materials and Molecular Sciences (talk)',
+    place: 'The Royal Society, London',
+    href: 'https://royalsociety.org/science-events-and-lectures/2025/10/quantum-computing/',
+  },
+  {
+    when: 'Mar 2025',
+    title: "King's–Imperial–UCL Quantum Meeting",
+    place: 'Imperial College London',
+  },
+  {
+    when: 'Feb 2025',
+    title: 'Winter School: Quantum Error Suppression, Mitigation, and Correction',
+    place: 'IPAM, UCLA, Los Angeles',
+    href: 'https://www.ipam.ucla.edu/programs/special-events-and-conferences/winter-school-quantum-error-suppression-mitigation-and-correction',
+  },
+  {
+    when: 'Oct–Dec 2023',
+    title: 'Mathematical and Computational Challenges in Quantum Computing',
+    place: 'IPAM, UCLA, Los Angeles',
+    href: 'https://www.ipam.ucla.edu/programs/long-programs/mathematical-and-computational-challenges-in-quantum-computing/',
+  },
+  {
+    when: 'Jul–Aug 2023',
+    title: 'It from Qubit',
+    place: 'Perimeter Institute for Theoretical Physics, Waterloo',
+    href: 'https://perimeterinstitute.ca/events/it-qubit-2023',
+  },
+  {
+    when: 'Sep 2023',
+    title: 'Scientific Applications of Quantum Computing: Materials, Chemistry, and Biology',
+    place: 'LSE, London',
+    href: 'https://mcc.hec.ac.uk/events/quantum-computing-2023/',
+  },
+  {
+    when: 'Oct 2023',
+    title: 'Quantum Engineering and Technology Conference 2023',
+    place: 'IET, London',
+    href: 'https://digital-library.theiet.org/toc/icp/2023/25',
+  },
+];
+---
+
+<Base title="Talks · Dario Picozzi">
+  <article class="measure">
+    <header class="page-head">
+      <h1>Conferences and talks</h1>
+    </header>
+
+    <section>
+      <ul class="entries">
+        {
+          talks.map((c) => (
+            <li>
+              <span class="years">{c.when}</span>
+              <div class="body">
+                <span class="lead">{c.href ? <a href={c.href}>{c.title}</a> : c.title}</span>
+                <span class="place">{c.place}</span>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .page-head { margin-block: 3.2rem 2.2rem; }
+  section { margin-block: 2.4rem; }
+  .entries { list-style: none; margin: 0; padding: 0; }
+  .entries li {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr;
+    gap: 1.2rem;
+    padding-block: 0.9rem;
+  }
+  .entries li + li { border-top: 1px solid var(--line); }
+  .years {
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    padding-top: 0.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .body { display: flex; flex-direction: column; gap: 0.1rem; }
+  .lead { color: var(--ink); font-weight: 400; }
+  .place { color: var(--ink-soft); font-size: 0.95rem; }
+  @media (max-width: 560px) {
+    .entries li { grid-template-columns: 1fr; gap: 0.25rem; }
+  }
+</style>

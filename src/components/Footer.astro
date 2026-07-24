@@ -1,0 +1,42 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer>
+  <div class="wide inner">
+    <span class="name">Dario Picozzi</span>
+    <div class="profiles">
+      <a href="https://github.com/dariopicozzi">GitHub</a>
+      <a href="https://scholar.google.com/citations?user=9mbE_9YAAAAJ">Google Scholar</a>
+      <a href="https://orcid.org/0000-0002-6517-2458">ORCID</a>
+      <a href="https://arxiv.org/search/?searchtype=author&query=Picozzi,+D">arXiv</a>
+      <a href="https://www.linkedin.com/in/dariopicozzi/">LinkedIn</a>
+      <a href="/contact/">Contact</a>
+    </div>
+    <span class="year">© {year}</span>
+  </div>
+</footer>
+
+<style>
+  footer {
+    margin-top: 5rem;
+    border-top: 1px solid var(--line);
+    padding-block: 2.2rem 2.8rem;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.5rem;
+    align-items: baseline;
+  }
+  .name { color: var(--ink); font-weight: 400; }
+  .profiles { display: flex; flex-wrap: wrap; gap: 1.3rem; }
+  .profiles a { color: var(--ink-soft); }
+  .profiles a:hover { color: var(--ink); }
+  .year { margin-left: auto; color: var(--ink-faint); }
+  @media (max-width: 640px) {
+    .year { margin-left: 0; }
+  }
+</style>

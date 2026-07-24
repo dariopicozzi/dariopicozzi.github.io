@@ -1,0 +1,106 @@
+/* ---------------------------------------------------------------
+   dariopicozzi.com global styles
+   Black canvas, Inter at light weights, white/light-gray type.
+   Accent: indigo → cyan, with magenta reserved for figure colormaps.
+   Single dark theme (no switcher).
+   --------------------------------------------------------------- */
+
+:root {
+  --bg: #050507;
+  --bg-raised: #0d0d12;
+  --ink: #f2f3f7;
+  --ink-soft: #b3b7c4;
+  --ink-faint: #6d7180;
+  --line: #1e1f28;
+  --accent: #818cf8;
+  --accent-2: #22d3ee;
+  --accent-3: #e879f9;
+  --accent-grad: linear-gradient(100deg, #818cf8, #22d3ee);
+  --link: #a5b4fc;
+  --code-bg: #15161d;
+  --max-measure: 42rem;
+  --wide-measure: 64rem;
+  --font-body: 'Inter Variable', -apple-system, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  background: var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+h1, h2, h3 {
+  font-weight: 250;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+h1 { font-size: clamp(2.6rem, 6.5vw, 4rem); }
+h2 { font-size: clamp(1.7rem, 3.5vw, 2.3rem); }
+h3 { font-size: 1.3rem; font-weight: 350; }
+
+strong { font-weight: 500; color: var(--ink); }
+
+/* Links: same colour as the surrounding text, bold, no underline. */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+article a,
+.card a { font-weight: 500; }
+article a:hover,
+.card a:hover { color: var(--ink); }
+
+p { margin: 0 0 1em; }
+
+code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--code-bg);
+  padding: 0.12em 0.35em;
+  border-radius: 4px;
+}
+
+.measure { max-width: var(--max-measure); margin-inline: auto; padding-inline: 1.25rem; }
+.wide    { max-width: var(--wide-measure); margin-inline: auto; padding-inline: 1.25rem; }
+
+/* full-bleed breakout for large figures */
+.breakout {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+.accent-text {
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* visually hidden (a11y) */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

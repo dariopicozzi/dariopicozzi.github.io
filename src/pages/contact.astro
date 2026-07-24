@@ -1,0 +1,83 @@
+---
+import Base from '../layouts/Base.astro';
+
+/*
+ * The form posts to Formspree, which relays messages by email without the
+ * address ever appearing in the site's source. Replace FORMSPREE_ID with the
+ * form ID from formspree.io (Forms → New form → copy the 8-character ID).
+ */
+const FORMSPREE_ID = 'mojgndke';
+---
+
+<Base title="Contact · Dario Picozzi">
+  <article class="measure">
+    <header class="page-head">
+      <h1>Contact</h1>
+      <p class="lede">
+        For research questions, collaborations, or anything else, the form below reaches
+        me directly. You can also find me
+        on <a href="https://github.com/dariopicozzi">GitHub</a> and <a href="https://www.linkedin.com/in/dariopicozzi/">LinkedIn</a>.
+      </p>
+    </header>
+
+    <form action={`https://formspree.io/f/${FORMSPREE_ID}`} method="POST">
+      <label>
+        <span>Name</span>
+        <input type="text" name="name" required autocomplete="name" />
+      </label>
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" required autocomplete="email" />
+      </label>
+      <label>
+        <span>Message</span>
+        <textarea name="message" rows="7" required></textarea>
+      </label>
+      <button type="submit">Send message</button>
+    </form>
+  </article>
+</Base>
+
+<style>
+  .page-head { margin-block: 3.2rem 2.4rem; }
+  .lede { color: var(--ink-soft); }
+  form {
+    display: grid;
+    gap: 1.2rem;
+    max-width: 34rem;
+    margin-bottom: 3rem;
+  }
+  label { display: grid; gap: 0.35rem; }
+  label span { font-size: 0.88rem; color: var(--ink-soft); }
+  input,
+  textarea {
+    font: inherit;
+    color: var(--ink);
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.65em 0.85em;
+  }
+  input:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--ink-soft);
+  }
+  button {
+    justify-self: start;
+    font: inherit;
+    font-weight: 500;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--ink-faint);
+    border-radius: 10px;
+    padding: 0.65em 1.5em;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  button:hover {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+</style>

@@ -1,0 +1,114 @@
+---
+import Base from '../layouts/Base.astro';
+import data from '../data/publications.json';
+
+const papers = data.papers;
+const thesis = data.thesis;
+
+function formatAuthors(authors: string[]) {
+  return authors
+    .map((a) => (a === 'Dario Picozzi' ? { name: a, me: true } : { name: a, me: false }));
+}
+---
+
+<Base title="Publications · Dario Picozzi">
+  <article class="measure">
+    <header class="page-head">
+      <h1>Publications</h1>
+      <p class="lede">
+        Also on <a href="https://scholar.google.com/citations?user=9mbE_9YAAAAJ">Google Scholar</a> and <a href="https://arxiv.org/search/?searchtype=author&query=Picozzi,+D">arXiv</a>.
+      </p>
+    </header>
+
+    <ol class="pub-list" reversed>
+      {
+        papers.map((p) => (
+          <li class="pub">
+            <div class="pub-year" aria-hidden="true">{p.year}</div>
+            <div class="pub-body">
+              <h2>{p.title}</h2>
+              <p class="authors">
+                {formatAuthors(p.authors).map((a, i) => (
+                  <>
+                    {i > 0 && ', '}
+                    <span class:list={{ me: a.me }}>{a.name}</span>
+                  </>
+                ))}
+              </p>
+              <p class="venue">
+                {p.venue}
+                {p.status === 'preprint' && <span class="badge">preprint</span>}
+              </p>
+              <p class="summary">{p.summary}</p>
+              <p class="links">
+                {Object.entries(p.links).map(([label, href]) => (
+                  <a href={href}>{label}</a>
+                ))}
+              </p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <section class="thesis">
+      <h2 class="thesis-head">PhD thesis</h2>
+      <p>
+        <em>{thesis.title}</em>. {thesis.venue}, {thesis.year}.{' '}
+        {Object.entries(thesis.links).map(([label, href]) => <a href={href}>{label}</a>)}
+      </p>
+    </section>
+  </article>
+</Base>
+
+<style>
+  .page-head { margin-block: 3.2rem 2.6rem; }
+  .lede { color: var(--ink-soft); }
+  .pub-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .pub {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 1.2rem;
+    padding-block: 1.6rem;
+    border-top: 1px solid var(--line);
+  }
+  .pub-year {
+    font-family: var(--font-display);
+    font-weight: 560;
+    color: var(--ink-faint);
+    font-size: 1.05rem;
+  }
+  .pub h2 {
+    font-size: 1.18rem;
+    margin: 0 0 0.35em;
+    font-weight: 580;
+  }
+  .authors { margin: 0 0 0.15em; font-size: 0.92rem; color: var(--ink-soft); }
+  .authors .me { color: var(--ink); font-weight: 560; }
+  .venue { margin: 0 0 0.5em; font-size: 0.92rem; font-style: italic; color: var(--ink-soft); }
+  .badge {
+    font-style: normal;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 0.12em 0.5em;
+    margin-left: 0.6em;
+    vertical-align: middle;
+  }
+  .summary { font-size: 0.95rem; color: var(--ink-soft); }
+  .links { display: flex; flex-wrap: wrap; gap: 1.1rem; margin: 0; font-size: 0.9rem; }
+  .thesis { margin-block: 3rem; padding-top: 1.6rem; border-top: 1px solid var(--line); }
+  .thesis-head { font-size: 1.05rem; }
+  .thesis a { margin-left: 0.5em; }
+  @media (max-width: 560px) {
+    .pub { grid-template-columns: 1fr; gap: 0.2rem; }
+  }
+</style>

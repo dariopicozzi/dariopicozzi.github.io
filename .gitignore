@@ -1,0 +1,31 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# Research page — held back until the preprint is published.
+# To re-include: delete this block, restore the Nav 'Research' link,
+# and rename src/pages/_research.astro -> research.astro
+src/pages/_research.astro
+src/components/figures/MinimalCircuitFigure.astro
+public/minimal-circuit-dark.png

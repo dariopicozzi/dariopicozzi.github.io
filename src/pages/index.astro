@@ -1,0 +1,54 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Dario Picozzi">
+  <section class="hero">
+    <div class="card">
+      <h1>Dario Picozzi</h1>
+      <p>
+        I am an EPSRC Postdoctoral Prize Fellow in the Department of Physics and Astronomy at
+        University College London (UCL). Previously, I held an EPSRC Research Fellowship at the
+        London Centre for Nanotechnology. My work sits at the intersection of geometry, physics
+        and information. It spans quantum computing, where I have worked on quantum algorithms,
+        quantum circuits and symmetry-adapted encodings to simulate physical processes, for
+        instance molecular electronic structure and electron–molecule scattering; the
+        information geometry of machine learning; and theoretical physics, including quantum
+        gravity, holography and foundational questions.
+      </p>
+      <p>
+        Outside academia, I am co-founder and managing director of{' '}
+        <a href="https://tanuki.ai">Tanuki</a>, an AI-powered computational simulation platform
+        for science and engineering. Through Tanuki, we contribute the simulation of sea-ice
+        mechanics to Re-thickening Arctic Sea Ice (RASI), an ARIA-funded, University of
+        Cambridge-led programme researching whether Arctic sea ice can be re-thickened to slow
+        its loss.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    min-height: calc(100dvh - 9rem);
+    display: flex;
+    align-items: center;
+    padding-block: clamp(2rem, 6vh, 4.5rem);
+    padding-inline: 1.25rem;
+  }
+  .card {
+    max-width: 46rem;
+    margin-inline: auto;
+    padding: clamp(1.8rem, 4vw, 3.2rem);
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+  }
+  h1 {
+    margin: 0.15em 0 0.6em;
+    color: var(--ink);
+  }
+  @media (max-width: 560px) {
+    .card { padding: 1.6rem 1.35rem; }
+  }
+</style>
