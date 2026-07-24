@@ -36,7 +36,7 @@ const ENDPOINT = 'https://form.dariopicozzi.com/contact.php';
         <textarea name="message" rows="7" required></textarea>
       </label>
       <!-- honeypot: real people leave this blank; bots tend to fill it.
-           Deliberately not called "website" — password managers autofill that,
+           Deliberately not called "website", as password managers autofill that,
            which would silently discard a genuine message. -->
       <div class="hp" aria-hidden="true">
         <label>Leave this field empty
@@ -124,7 +124,7 @@ const ENDPOINT = 'https://form.dariopicozzi.com/contact.php';
         if (res.ok && data.ok) {
           form.reset();
           status.classList.add('is-ok');
-          status.textContent = 'Thanks — your message has been sent.';
+          status.textContent = 'Thanks, your message has been sent.';
         } else {
           status.classList.add('is-error');
           status.textContent = data.error || 'Something went wrong. Please try again.';
