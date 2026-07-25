@@ -9,11 +9,13 @@ import Base from '../layouts/Base.astro';
 >
   <script is:inline>
     // Gate the intro so it can be revealed word by word. The timer is a safety
-    // net: if the reveal module never loads, the gate lifts on its own rather
-    // than leaving the page's only copy invisible. Once the module has run the
-    // paragraphs carry an inline opacity, so dropping the class changes nothing.
+    // net for the case where the reveal module never loads: without it a failed
+    // module would leave the page's only copy invisible. The module clears it as
+    // soon as it takes over, because the mobile sequence finishes later than
+    // this timeout and lifting the gate mid-sequence would flash the unrevealed
+    // paragraphs on screen before their animation pulled them back to opacity 0.
     document.documentElement.classList.add('js-reveal');
-    setTimeout(function () {
+    window.__introFallback = setTimeout(function () {
       document.documentElement.classList.remove('js-reveal');
     }, 4000);
   </script>
@@ -204,6 +206,9 @@ import Base from '../layouts/Base.astro';
 
   const hero = document.querySelector('.hero');
   if (hero) {
+    // This module is now driving the reveal, so retire the inline safety net.
+    // Left running it would lift the gate part-way through the mobile sequence.
+    clearTimeout((window as any).__introFallback);
     const blocks = [...hero.querySelectorAll('.intro')];
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const showFigure = () => {
