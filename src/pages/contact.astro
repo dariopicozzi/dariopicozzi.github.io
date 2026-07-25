@@ -46,6 +46,12 @@ const ENDPOINT = 'https://form.dariopicozzi.com/contact.php';
       <button type="submit">Send message</button>
       <p id="form-status" role="status" aria-live="polite"></p>
     </form>
+
+    <!-- replaces the form once a message has gone through -->
+    <div id="contact-sent" class="sent" role="status" aria-live="polite" tabindex="-1" hidden>
+      <p class="sent-lead">Thanks, your message has been sent.</p>
+      <p class="sent-sub">It reaches me directly, and I will reply to the address you gave.</p>
+    </div>
   </article>
 </Base>
 
@@ -58,6 +64,8 @@ const ENDPOINT = 'https://form.dariopicozzi.com/contact.php';
     max-width: 34rem;
     margin-bottom: 3rem;
   }
+  /* display:grid above would otherwise beat the default [hidden] rule */
+  form[hidden] { display: none; }
   label { display: grid; gap: 0.35rem; }
   label span { font-size: 0.88rem; color: var(--ink-soft); }
   input,
@@ -100,12 +108,27 @@ const ENDPOINT = 'https://form.dariopicozzi.com/contact.php';
   #form-status { margin: 0; min-height: 1.2em; font-size: 0.92rem; }
   #form-status.is-ok { color: var(--ink); }
   #form-status.is-error { color: #e5736a; }
+
+  /* confirmation panel, shown in place of the form */
+  .sent {
+    max-width: 34rem;
+    margin-bottom: 3rem;
+    padding: 1.5rem 1.6rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-raised);
+    outline: none;
+  }
+  .sent[hidden] { display: none; }
+  .sent-lead { margin: 0 0 0.4em; color: var(--ink); }
+  .sent-sub { margin: 0; color: var(--ink-soft); font-size: 0.92rem; }
 </style>
 
 <script>
   const form = document.getElementById('contact-form') as HTMLFormElement | null;
   if (form) {
     const status = document.getElementById('form-status')!;
+    const sent = document.getElementById('contact-sent')!;
     const button = form.querySelector('button')!;
     const label = button.textContent;
     form.addEventListener('submit', async (e) => {
@@ -122,9 +145,12 @@ const ENDPOINT = 'https://form.dariopicozzi.com/contact.php';
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.ok) {
+          // swap the form out for the confirmation
           form.reset();
-          status.classList.add('is-ok');
-          status.textContent = 'Thanks, your message has been sent.';
+          form.hidden = true;
+          sent.hidden = false;
+          sent.focus();
+          return;
         } else {
           status.classList.add('is-error');
           status.textContent = data.error || 'Something went wrong. Please try again.';
