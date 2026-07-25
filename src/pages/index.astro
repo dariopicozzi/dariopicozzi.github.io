@@ -2,8 +2,21 @@
 import Base from '../layouts/Base.astro';
 ---
 
-<Base title="Dario Picozzi">
-  <script is:inline>document.documentElement.classList.add('js-reveal')</script>
+<Base
+  title="Dario Picozzi · Quantum computing and information geometry"
+  description="Dario Picozzi, EPSRC Postdoctoral Prize Fellow in Physics and Astronomy at UCL. Research on quantum computing, information geometry and quantum gravity."
+  profile
+>
+  <script is:inline>
+    // Gate the intro so it can be revealed word by word. The timer is a safety
+    // net: if the reveal module never loads, the gate lifts on its own rather
+    // than leaving the page's only copy invisible. Once the module has run the
+    // paragraphs carry an inline opacity, so dropping the class changes nothing.
+    document.documentElement.classList.add('js-reveal');
+    setTimeout(function () {
+      document.documentElement.classList.remove('js-reveal');
+    }, 4000);
+  </script>
   <section class="hero">
     <div class="hero-inner">
       <div class="intro">
@@ -102,8 +115,11 @@ import Base from '../layouts/Base.astro';
     margin-bottom: 1.9em;
     text-shadow: 0 1px 18px var(--bg), 0 0 3px var(--bg);
   }
-  .intro a { color: var(--ink); font-weight: 500; }
-  .intro a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .intro a { color: var(--ink); font-weight: 500; transition: opacity 0.15s ease; }
+  /* No underline on hover: the reveal wraps each word in an inline-block span,
+     and text-decoration from an ancestor does not draw through inline-block
+     children, so an underline would appear only under the spaces between words. */
+  .intro a:hover { opacity: 0.7; }
 
   /* mobile: the animation sits in the flow, between the first paragraph and
      the rest (DOM order is block-a, canvas, block-b) */

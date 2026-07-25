@@ -9,9 +9,62 @@ function formatAuthors(authors: string[]) {
   return authors
     .map((a) => (a === 'Dario Picozzi' ? { name: a, me: true } : { name: a, me: false }));
 }
+
+/* Machine-readable list of the papers. Every entry credits the same Person node
+   declared in the layout, so a search engine ties the work to one author rather
+   than to a name string that happens to recur. */
+const PERSON = 'https://dariopicozzi.com/#person';
+
+const author = (names: string[]) =>
+  names.map((n) =>
+    n === 'Dario Picozzi'
+      ? { '@type': 'Person', '@id': PERSON, name: n }
+      : { '@type': 'Person', name: n },
+  );
+
+const article = (p: (typeof papers)[number]) => ({
+  '@type': 'ScholarlyArticle',
+  name: p.title,
+  author: author(p.authors),
+  datePublished: String(p.year),
+  abstract: p.summary,
+  ...(p.links.Journal || p.links.arXiv ? { url: p.links.Journal ?? p.links.arXiv } : {}),
+  ...(p.arxiv ? { identifier: `arXiv:${p.arxiv}` } : {}),
+  // only a published paper genuinely belongs to a periodical
+  ...(p.status === 'journal' ? { isPartOf: { '@type': 'Periodical', name: p.venue } } : {}),
+});
+
+const publicationsLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Publications',
+  url: 'https://dariopicozzi.com/publications/',
+  about: { '@id': PERSON },
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: papers.length,
+    itemListElement: papers.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: article(p),
+    })),
+  },
+  hasPart: {
+    '@type': 'Thesis',
+    name: thesis.title,
+    author: { '@id': PERSON },
+    datePublished: String(thesis.year),
+    inSupportOf: 'PhD',
+  },
+};
 ---
 
-<Base title="Publications · Dario Picozzi">
+<Base
+  title="Publications · Dario Picozzi"
+  description="Papers and preprints by Dario Picozzi on quantum algorithms, quantum circuits and symmetry-adapted encodings for simulating molecular systems."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(publicationsLd)} slot="head" />
+
   <article class="measure">
     <header class="page-head">
       <h1>Publications</h1>

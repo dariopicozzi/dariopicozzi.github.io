@@ -7,12 +7,72 @@ import Footer from '../components/Footer.astro';
 interface Props {
   title: string;
   description?: string;
+  /* Set on the homepage only: emits the Person structured data. */
+  profile?: boolean;
 }
 
 const {
   title,
-  description = 'Dario Picozzi, postdoctoral research fellow at UCL and the London Centre for Nanotechnology. Quantum computing, the information geometry of machine learning, and quantum gravity, unified by geometry.',
+  description = 'Dario Picozzi, EPSRC Postdoctoral Prize Fellow in Physics and Astronomy at UCL. Quantum computing, the information geometry of machine learning, and quantum gravity, unified by geometry.',
+  profile = false,
 } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/og-image.png', Astro.site);
+
+/* Profile URLs. sameAs is how a search engine ties this site, ORCID, Google
+   Scholar, arXiv and the rest together as one person rather than several. */
+const sameAs = [
+  'https://orcid.org/0000-0002-6517-2458',
+  'https://scholar.google.com/citations?user=9mbE_9YAAAAJ',
+  'https://arxiv.org/search/?searchtype=author&query=Picozzi,+D',
+  'https://github.com/dariopicozzi',
+  'https://www.linkedin.com/in/dariopicozzi/',
+];
+
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  '@id': 'https://dariopicozzi.com/#person',
+  name: 'Dario Picozzi',
+  givenName: 'Dario',
+  familyName: 'Picozzi',
+  url: 'https://dariopicozzi.com',
+  image: ogImage.href,
+  jobTitle: 'EPSRC Postdoctoral Prize Fellow',
+  description:
+    'Physicist working on quantum computing, the information geometry of machine learning, and quantum gravity.',
+  identifier: 'https://orcid.org/0000-0002-6517-2458',
+  affiliation: {
+    '@type': 'CollegeOrUniversity',
+    name: 'University College London',
+    department: { '@type': 'Organization', name: 'Department of Physics and Astronomy' },
+    url: 'https://www.ucl.ac.uk/',
+  },
+  knowsAbout: [
+    'Quantum computing',
+    'Quantum algorithms',
+    'Quantum circuits',
+    'Symmetry-adapted encodings',
+    'Molecular electronic structure',
+    'Electron-molecule scattering',
+    'Information geometry',
+    'Machine learning',
+    'Quantum gravity',
+    'Holography',
+  ],
+  sameAs,
+};
+
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': 'https://dariopicozzi.com/#website',
+  url: 'https://dariopicozzi.com',
+  name: 'Dario Picozzi',
+  inLanguage: 'en',
+  publisher: { '@id': 'https://dariopicozzi.com/#person' },
+};
 ---
 
 <!doctype html>
@@ -22,12 +82,34 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="author" content="Dario Picozzi" />
     <meta name="color-scheme" content="dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <link rel="canonical" href={canonical} />
+
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={profile ? 'profile' : 'website'} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="Dario Picozzi" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Dario Picozzi, EPSRC Postdoctoral Prize Fellow, Department of Physics and Astronomy, UCL"
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(website)} />
+    {profile && <script type="application/ld+json" set:html={JSON.stringify(person)} />}
+    <slot name="head" />
   </head>
   <body>
     <a class="sr-only" href="#main">Skip to content</a>

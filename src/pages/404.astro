@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Page not found · Dario Picozzi"
+  description="That page does not exist. Find publications, software, talks and contact details for Dario Picozzi, EPSRC Postdoctoral Prize Fellow in Physics and Astronomy at UCL."
+>
+  <article class="measure">
+    <header class="page-head">
+      <p class="code">404</p>
+      <h1>Page not found</h1>
+      <p class="lede">
+        That page does not exist, or it has moved. You might be looking for
+        <a href="/publications/">publications</a>, <a href="/software/">software</a>,
+        <a href="/talks/">talks</a>, or my <a href="/background/">background</a>.
+      </p>
+      <p><a class="home" href="/">Back to the homepage</a></p>
+    </header>
+  </article>
+</Base>
+
+<style>
+  .page-head { margin-block: 4.5rem 3rem; }
+  .code {
+    margin: 0 0 0.6rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    color: var(--ink-faint);
+  }
+  h1 { margin: 0 0 1rem; }
+  .lede { color: var(--ink-soft); max-width: 34rem; }
+  .lede a { color: var(--ink); font-weight: 500; }
+  .home {
+    display: inline-block;
+    margin-top: 1.4rem;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .lede a:hover,
+  .home:hover { opacity: 0.7; }
+</style>
