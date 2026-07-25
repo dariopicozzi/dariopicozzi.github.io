@@ -1,13 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!--
+    Sphere and equator, carrying the two phase colours of the homepage hero:
+    cyan (#21d4ed) and magenta (#e878fa) are the same values the orbital uses
+    for the two signs of the wavefunction. The gradient holds each hue and
+    blends only across the middle; a smooth cyan-to-magenta ramp would
+    interpolate through blue and read as neither colour.
+  -->
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#4f46e5"/>
-      <stop offset="1" stop-color="#06b6d4"/>
+    <linearGradient id="g" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#21d4ed"/>
+      <stop offset="0.46" stop-color="#21d4ed"/>
+      <stop offset="0.54" stop-color="#e878fa"/>
+      <stop offset="1" stop-color="#e878fa"/>
     </linearGradient>
   </defs>
-  <!-- Bloch sphere: circle, equator ellipse, state vector -->
   <circle cx="64" cy="64" r="52" fill="none" stroke="url(#g)" stroke-width="7"/>
   <ellipse cx="64" cy="64" rx="52" ry="18" fill="none" stroke="url(#g)" stroke-width="4" opacity="0.55"/>
-  <line x1="64" y1="64" x2="96" y2="30" stroke="url(#g)" stroke-width="8" stroke-linecap="round"/>
-  <circle cx="96" cy="30" r="10" fill="url(#g)"/>
 </svg>
