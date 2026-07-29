@@ -33,3 +33,6 @@ pnpm-debug.log*
 src/pages/_research.astro
 src/components/figures/MinimalCircuitFigure.astro
 public/minimal-circuit-dark.png
+
+# Markdown files are local-only.
+*.md
