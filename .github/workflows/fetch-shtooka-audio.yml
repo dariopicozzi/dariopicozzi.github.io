@@ -1,0 +1,39 @@
+name: Fetch Shtooka source audio
+
+# The Shtooka Project hosts are unreachable from the environment that
+# assembles the minimal-pairs track, so a runner fetches the individual
+# CC BY 3.0 recordings and commits them to this branch.
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/repeated-word-pairs-audio-obf5iv]
+    paths:
+      - tools/minimal-pairs/fetch_shtooka_sources.py
+      - .github/workflows/fetch-shtooka-audio.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-shtooka-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch recordings
+        run: python3 tools/minimal-pairs/fetch_shtooka_sources.py
+      - name: Commit sources to this branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/audio/minimal-pairs/source
+          if git diff --cached --quiet; then
+            echo "nothing new to commit"
+          else
+            git commit -m "Audio: add Shtooka eng-balm-judith source recordings (CC BY 3.0)"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
