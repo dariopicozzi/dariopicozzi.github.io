@@ -4,23 +4,30 @@
 Downloads individual word recordings from the Shtooka Project collection
 "eng-balm-judith" (speaker: Judith Frank, London; licence: CC BY 3.0).
 Runs on a GitHub Actions runner because this collection's hosts are not
-reachable from every network. Falls back to the collection tar archive,
-then to the same collection's files on Wikimedia Commons.
+reachable from every network.
 
-Stdlib only. Writes into public/audio/minimal-pairs/source/ and leaves a
-fetch-report.json describing exactly what was downloaded from where.
+Sources, in order of preference:
+ 1. the collection archive, discovered by scraping shtooka.net /
+    swac-collections.org download pages (FLAC originals);
+ 2. the same collection's files on Wikimedia Commons (En-uk-<word>.ogg),
+    fetched with one batched API query and polite, 429-aware downloads.
+
+Idempotent: words that already have a file in the source directory are
+kept as they are. Stdlib only. Writes fetch-report.json with provenance.
 """
 
 import io
 import json
 import os
 import re
+import socket
 import sys
 import tarfile
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import zipfile
 
 PAIRS = [
     ("sheep", "ship"), ("sit", "set"), ("men", "man"), ("full", "fool"),
@@ -30,37 +37,54 @@ PAIRS = [
 WORDS = [w for pair in PAIRS for w in pair]
 
 OUT_DIR = os.path.join("public", "audio", "minimal-pairs", "source")
+AUDIO_EXTS = (".flac", ".ogg", ".oga", ".mp3", ".wav")
 
-COLLECTION = "eng-balm-judith"
-INDEX_URLS = [
-    f"https://packs.shtooka.net/{COLLECTION}/flac/index.tags.txt",
-    f"https://packs.shtooka.net/{COLLECTION}/ogg/index.tags.txt",
-    f"https://packs.shtooka.net/{COLLECTION}/mp3/index.tags.txt",
-    f"https://packs.shtooka.net/{COLLECTION}/index.tags.txt",
-    f"http://packs.shtooka.net/{COLLECTION}/flac/index.tags.txt",
-    f"http://packs.shtooka.net/{COLLECTION}/ogg/index.tags.txt",
+DOWNLOAD_PAGES = [
+    "https://shtooka.net/download.php",
+    "http://shtooka.net/download.php",
+    "http://swac-collections.org/download.php",
+    "http://swac-collections.org/",
 ]
-TAR_URLS = [
-    f"https://packs.shtooka.net/{COLLECTION}.tar",
-    f"http://packs.shtooka.net/{COLLECTION}.tar",
-    f"https://download.shtooka.net/{COLLECTION}.tar",
-    f"http://download.shtooka.net/{COLLECTION}.tar",
+DIRECT_ARCHIVE_GUESSES = [
+    "https://shtooka.net/packs/eng-balm-judith.tar",
+    "http://swac-collections.org/packs/eng-balm-judith.tar",
 ]
-EXTRA_FILES = ["readme.txt", "README.txt", "COPYRIGHT.txt", "license.txt", "LICENSE.txt"]
 
-UA = {"User-Agent": "minimal-pairs-fetcher/1.0 (github.com/dariopicozzi/dariopicozzi.github.io)"}
+COMMONS_API = "https://commons.wikimedia.org/w/api.php"
+SHTOOKA_CATEGORY = "Category:Audio files from Shtooka Project (English)"
+POLITE_DELAY = 1.2  # s between consecutive Wikimedia requests
+
+UA = {"User-Agent": "minimal-pairs-fetcher/2.0 (https://github.com/dariopicozzi/dariopicozzi.github.io; audio credits workflow)"}
 
 
-def get(url, tries=3, timeout=60):
+def log(*args):
+    print(*args, flush=True)
+
+
+def get(url, tries=3, timeout=30):
     last = None
-    for attempt in range(tries):
+    for attempt in range(1, tries + 1):
         try:
             req = urllib.request.Request(url, headers=UA)
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return r.read()
-        except Exception as e:  # noqa: BLE001 - report the last failure, whatever it was
+        except urllib.error.HTTPError as e:
             last = e
-            time.sleep(2 * (attempt + 1))
+            if e.code == 429:
+                wait = max(int(e.headers.get("Retry-After") or 0), 5 * attempt)
+                log(f"  429 for {url}, waiting {wait}s")
+                time.sleep(wait)
+                continue
+            if e.code == 404 or attempt == tries:
+                raise
+            time.sleep(2 * attempt)
+        except urllib.error.URLError as e:
+            if isinstance(getattr(e, "reason", None), socket.gaierror):
+                raise  # dead DNS: retrying will not help
+            last = e
+            if attempt == tries:
+                raise
+            time.sleep(2 * attempt)
     raise last
 
 
@@ -88,189 +112,235 @@ def norm(s):
 
 
 def match_word(entries, word):
-    """Return (section, tags, quality) for the entry whose text is `word`.
-
-    quality: 'exact' if SWAC_TEXT is the bare word, 'prefixed' if it only
-    matches after stripping a leading article/'to' (flagged for review).
-    """
-    exact, prefixed = [], []
     for section, tags in entries.items():
-        text = norm(tags.get("SWAC_TEXT", ""))
-        if not text:
-            continue
-        if text == word:
-            exact.append((section, tags))
-            continue
-        for pre in ("a ", "an ", "the ", "to "):
-            if text == pre + word:
-                prefixed.append((section, tags))
-                break
-    if exact:
-        return exact[0] + ("exact",)
-    if prefixed:
-        return prefixed[0] + ("prefixed",)
-    return None, None, None
+        if norm(tags.get("SWAC_TEXT", "")) == word:
+            return section, tags
+    return None, None
 
 
-def fetch_via_index():
-    for index_url in INDEX_URLS:
+def discover_archive_urls():
+    urls = []
+    for page in DOWNLOAD_PAGES:
         try:
-            text = get(index_url).decode("utf-8", errors="replace")
+            html = get(page, tries=1, timeout=20).decode("utf-8", "replace")
         except Exception as e:  # noqa: BLE001
-            print(f"index unavailable: {index_url} ({e})")
+            log(f"download page unavailable: {page} ({e})")
             continue
-        entries = parse_tags(text)
-        if not entries:
-            print(f"index empty/unparsable: {index_url}")
-            continue
-        print(f"using index: {index_url} ({len(entries)} entries)")
-        base = index_url.rsplit("/", 1)[0] + "/"
-        report = {"index_url": index_url, "entry_count": len(entries), "words": {}}
-        with open(os.path.join(OUT_DIR, "index.tags.txt"), "w", encoding="utf-8") as f:
-            f.write(text)
-        ok = True
-        for word in WORDS:
-            section, tags, quality = match_word(entries, word)
-            if section is None:
-                print(f"MISSING in index: {word}")
-                report["words"][word] = {"status": "missing"}
-                ok = False
-                continue
-            rel = section.lstrip("./")
-            url = urllib.parse.urljoin(base, urllib.parse.quote(rel))
-            ext = os.path.splitext(rel)[1] or ".flac"
-            dest = os.path.join(OUT_DIR, word + ext)
-            try:
-                data = get(url)
-                with open(dest, "wb") as f:
-                    f.write(data)
-                print(f"{word}: {url} -> {dest} ({len(data)} bytes, match={quality})")
-                report["words"][word] = {
-                    "status": "ok", "file": os.path.basename(dest), "url": url,
-                    "match": quality, "bytes": len(data), "tags": tags,
-                }
-            except Exception as e:  # noqa: BLE001
-                print(f"FAILED download {word}: {url} ({e})")
-                report["words"][word] = {"status": "download-failed", "url": url}
-                ok = False
-        for name in EXTRA_FILES:
-            try:
-                data = get(urllib.parse.urljoin(base, name), tries=1, timeout=20)
-                with open(os.path.join(OUT_DIR, "collection-" + name.lower()), "wb") as f:
-                    f.write(data)
-                print(f"saved collection file: {name}")
-            except Exception:  # noqa: BLE001
-                pass
-        return report, ok
-    return None, False
+        for href in re.findall(r"""href=["']([^"']+)["']""", html):
+            if re.search(r"judith|eng-balm", href, re.I):
+                urls.append(urllib.parse.urljoin(page, href))
+        log(f"scraped {page}: {len(urls)} candidate link(s) so far")
+    urls.extend(DIRECT_ARCHIVE_GUESSES)
+    seen, ordered = set(), []
+    for u in urls:
+        if u not in seen:
+            seen.add(u)
+            ordered.append(u)
+    return ordered
 
 
-def fetch_via_tar():
-    for tar_url in TAR_URLS:
-        try:
-            blob = get(tar_url, tries=2, timeout=300)
-        except Exception as e:  # noqa: BLE001
-            print(f"tar unavailable: {tar_url} ({e})")
-            continue
-        print(f"downloaded tar: {tar_url} ({len(blob)} bytes)")
+def entries_from_archive(blob, label):
+    """Extract needed words from a tar/zip archive blob. Returns report entries."""
+    if blob[:2] == b"PK":
+        zf = zipfile.ZipFile(io.BytesIO(blob))
+        names = zf.namelist()
+        read = lambda n: zf.read(n)  # noqa: E731
+    else:
         tf = tarfile.open(fileobj=io.BytesIO(blob))
         names = tf.getnames()
-        index_name = next((n for n in names if n.endswith("index.tags.txt")), None)
-        if not index_name:
-            print("tar has no index.tags.txt")
+        read = lambda n: tf.extractfile(n).read()  # noqa: E731
+    index_name = next((n for n in names if n.endswith("index.tags.txt")), None)
+    if not index_name:
+        log(f"  archive has no index.tags.txt ({label})")
+        return {}
+    entries = parse_tags(read(index_name).decode("utf-8", "replace"))
+    prefix = os.path.dirname(index_name)
+    got = {}
+    for word in WORDS:
+        section, tags = match_word(entries, word)
+        if section is None:
             continue
-        entries = parse_tags(tf.extractfile(index_name).read().decode("utf-8", "replace"))
-        prefix = os.path.dirname(index_name)
-        report = {"tar_url": tar_url, "entry_count": len(entries), "words": {}}
-        ok = True
-        for word in WORDS:
-            section, tags, quality = match_word(entries, word)
-            if section is None:
-                report["words"][word] = {"status": "missing"}
-                ok = False
+        member = "/".join(p for p in (prefix, section.lstrip("./")) if p)
+        if member not in names:
+            member = next((n for n in names if n.endswith("/" + os.path.basename(section))), None)
+            if member is None:
                 continue
-            member = os.path.join(prefix, section.lstrip("./")) if prefix else section
-            try:
-                data = tf.extractfile(member).read()
-            except Exception:  # noqa: BLE001
-                cand = next((n for n in names if n.endswith("/" + os.path.basename(section))), None)
-                if not cand:
-                    report["words"][word] = {"status": "not-in-tar", "member": member}
-                    ok = False
-                    continue
-                data = tf.extractfile(cand).read()
-                member = cand
-            ext = os.path.splitext(member)[1] or ".flac"
-            dest = os.path.join(OUT_DIR, word + ext)
-            with open(dest, "wb") as f:
-                f.write(data)
-            print(f"{word}: tar:{member} -> {dest} ({len(data)} bytes, match={quality})")
-            report["words"][word] = {
-                "status": "ok", "file": os.path.basename(dest), "url": f"{tar_url}#{member}",
-                "match": quality, "bytes": len(data), "tags": tags,
-            }
-        return report, ok
-    return None, False
+        ext = os.path.splitext(member)[1] or ".flac"
+        dest = os.path.join(OUT_DIR, word + ext)
+        with open(dest, "wb") as f:
+            f.write(read(member))
+        log(f"  {word}: archive:{member} -> {dest}")
+        got[word] = {"status": "ok", "file": os.path.basename(dest),
+                     "url": f"{label}#{member}", "match": "archive", "tags": tags}
+    return got
 
 
-COMMONS_API = "https://commons.wikimedia.org/w/api.php"
-
-
-def fetch_from_commons(word):
-    """Fallback: find this word's recording from the same collection on Commons."""
-    titles = "|".join(f"File:En-{v}{word}.ogg" for v in ("", "uk-", "us-"))
-    q = urllib.parse.urlencode({
-        "action": "query", "format": "json", "titles": titles,
-        "prop": "imageinfo|revisions", "iiprop": "url|extmetadata",
-        "rvprop": "content", "rvslots": "main",
-    })
-    data = json.loads(get(f"{COMMONS_API}?{q}").decode("utf-8"))
-    for page in data.get("query", {}).get("pages", {}).values():
-        if "imageinfo" not in page:
+def fetch_via_archives(missing):
+    for url in discover_archive_urls():
+        if not missing:
+            break
+        base = url.split("?")[0].lower()
+        if not base.endswith((".tar", ".tar.gz", ".tgz", ".zip")):
             continue
         try:
-            wikitext = page["revisions"][0]["slots"]["main"]["*"]
-        except (KeyError, IndexError):
-            wikitext = ""
-        blob_l = wikitext.lower()
-        if "shtooka" not in blob_l or not ("judith" in blob_l or "eng-balm" in blob_l):
+            blob = get(url, tries=1, timeout=180)
+        except Exception as e:  # noqa: BLE001
+            log(f"archive unavailable: {url} ({e})")
             continue
-        url = page["imageinfo"][0]["url"]
-        dest = os.path.join(OUT_DIR, word + ".ogg")
+        log(f"downloaded archive: {url} ({len(blob)} bytes)")
+        try:
+            return entries_from_archive(blob, url)
+        except Exception as e:  # noqa: BLE001
+            log(f"  archive unreadable: {e}")
+    return {}
+
+
+def commons_api(params):
+    q = urllib.parse.urlencode({**params, "format": "json", "formatversion": "2", "maxlag": "5"})
+    data = json.loads(get(f"{COMMONS_API}?{q}", tries=4).decode("utf-8"))
+    time.sleep(POLITE_DELAY)
+    return data
+
+
+def candidate_titles(word):
+    return [f"File:En-uk-{word}.ogg", f"File:En-{word}.ogg"]
+
+
+def pick_commons_pages(pages_by_title, words):
+    """Choose one Commons page per word, requiring Shtooka/Judith evidence."""
+    chosen = {}
+    for word in words:
+        best = None
+        for title in candidate_titles(word):
+            page = pages_by_title.get(title.lower())
+            if page is None:
+                continue
+            text = page.get("wikitext", "").lower()
+            is_uk = title.lower().startswith("file:en-uk-")
+            judith = "judith" in text or "eng-balm" in text
+            shtooka = "shtooka" in text
+            if judith or (is_uk and shtooka):
+                score = (2 if judith else 1) + (1 if is_uk else 0)
+                if best is None or score > best[0]:
+                    best = (score, title, page)
+        if best:
+            chosen[word] = best[1:]
+    return chosen
+
+
+def commons_query_titles(titles):
+    pages_by_title = {}
+    for i in range(0, len(titles), 50):
+        chunk = titles[i:i + 50]
+        data = commons_api({
+            "action": "query", "titles": "|".join(chunk),
+            "prop": "imageinfo|revisions", "iiprop": "url",
+            "rvprop": "content", "rvslots": "main",
+        })
+        for page in data.get("query", {}).get("pages", []):
+            if page.get("missing") or "imageinfo" not in page:
+                continue
+            try:
+                wikitext = page["revisions"][0]["slots"]["main"]["content"]
+            except (KeyError, IndexError):
+                wikitext = ""
+            pages_by_title[page["title"].lower()] = {
+                "title": page["title"],
+                "url": page["imageinfo"][0]["url"],
+                "wikitext": wikitext,
+            }
+    return pages_by_title
+
+
+def fetch_via_commons(missing):
+    titles = [t for w in missing for t in candidate_titles(w)]
+    try:
+        pages = commons_query_titles(titles)
+    except Exception as e:  # noqa: BLE001
+        log(f"commons batch query failed: {e}")
+        return {}
+    log(f"commons: {len(pages)} of {len(titles)} candidate titles exist")
+    chosen = pick_commons_pages(pages, missing)
+
+    leftovers = [w for w in missing if w not in chosen]
+    if leftovers:
+        log(f"category scan for: {', '.join(leftovers)}")
+        try:
+            members, cont = [], {}
+            while True:
+                data = commons_api({
+                    "action": "query", "list": "categorymembers",
+                    "cmtitle": SHTOOKA_CATEGORY, "cmnamespace": "6",
+                    "cmlimit": "500", **cont,
+                })
+                members += [m["title"] for m in data["query"]["categorymembers"]]
+                cont = data.get("continue")
+                if not cont:
+                    break
+            log(f"  category has {len(members)} files")
+            extra = []
+            for w in leftovers:
+                pat = re.compile(rf"^File:En-(uk-)?{re.escape(w)}( \(\d+\))?\.(ogg|oga|flac)$", re.I)
+                extra += [t for t in members if pat.match(t)]
+            if extra:
+                pages.update(commons_query_titles(extra))
+                for w, picked in pick_commons_pages(pages, leftovers).items():
+                    chosen[w] = picked
+        except Exception as e:  # noqa: BLE001
+            log(f"  category scan failed: {e}")
+
+    got = {}
+    for word, (title, page) in chosen.items():
+        try:
+            data = get(page["url"], tries=4)
+        except Exception as e:  # noqa: BLE001
+            log(f"download failed for {word} ({title}): {e}")
+            continue
+        time.sleep(POLITE_DELAY)
+        ext = os.path.splitext(urllib.parse.urlparse(page["url"]).path)[1] or ".ogg"
+        dest = os.path.join(OUT_DIR, word + ext)
         with open(dest, "wb") as f:
-            f.write(get(url))
-        print(f"{word}: commons {page['title']} -> {dest}")
-        return {"status": "ok", "file": os.path.basename(dest), "url": url,
-                "match": "commons", "commons_title": page["title"]}
-    return None
+            f.write(data)
+        log(f"{word}: commons {title} -> {dest} ({len(data)} bytes)")
+        got[word] = {"status": "ok", "file": os.path.basename(dest),
+                     "url": page["url"], "match": "commons", "commons_title": title}
+    return got
 
 
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
-    report, ok = fetch_via_index()
-    if report is None:
-        report, ok = fetch_via_tar()
-    if report is None:
-        report, ok = {"words": {}}, False
-    if not ok:
-        for word in WORDS:
-            if report["words"].get(word, {}).get("status") == "ok":
-                continue
-            try:
-                got = fetch_from_commons(word)
-            except Exception as e:  # noqa: BLE001
-                got = None
-                print(f"commons fallback failed for {word}: {e}")
-            if got:
-                report["words"][word] = got
-    report["pairs"] = PAIRS
-    missing = [w for w in WORDS if report["words"].get(w, {}).get("status") != "ok"]
-    report["missing"] = missing
-    with open(os.path.join(OUT_DIR, "fetch-report.json"), "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, ensure_ascii=False)
-    print(f"\ndone: {len(WORDS) - len(missing)}/{len(WORDS)} words fetched")
+    report_path = os.path.join(OUT_DIR, "fetch-report.json")
+    previous = {}
+    if os.path.exists(report_path):
+        with open(report_path, encoding="utf-8") as f:
+            previous = json.load(f).get("words", {})
+
+    words_report = {}
+    for word in WORDS:
+        existing = [f for f in os.listdir(OUT_DIR)
+                    if os.path.splitext(f)[0] == word and f.endswith(AUDIO_EXTS)]
+        if existing:
+            entry = previous.get(word, {"status": "ok", "match": "existing"})
+            entry["file"] = existing[0]
+            entry["status"] = "ok"
+            words_report[word] = entry
+
+    missing = [w for w in WORDS if w not in words_report]
+    log(f"already present: {len(words_report)}; to fetch: {len(missing)}")
+
     if missing:
-        print("missing:", ", ".join(missing))
+        words_report.update(fetch_via_archives(missing))
+        missing = [w for w in WORDS if w not in words_report]
+    if missing:
+        words_report.update(fetch_via_commons(missing))
+        missing = [w for w in WORDS if w not in words_report]
+
+    report = {"pairs": PAIRS, "words": words_report, "missing": missing}
+    with open(report_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
+    log(f"\ndone: {len(WORDS) - len(missing)}/{len(WORDS)} words available")
+    if missing:
+        log("missing: " + ", ".join(missing))
 
 
 if __name__ == "__main__":

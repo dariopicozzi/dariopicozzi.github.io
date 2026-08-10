@@ -25,6 +25,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fetch recordings
         run: python3 tools/minimal-pairs/fetch_shtooka_sources.py
+        env:
+          PYTHONUNBUFFERED: "1"
       - name: Commit sources to this branch
         run: |
           git config user.name "github-actions[bot]"
