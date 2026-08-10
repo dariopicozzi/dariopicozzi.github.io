@@ -7,10 +7,12 @@ Runs on a GitHub Actions runner because this collection's hosts are not
 reachable from every network.
 
 Sources, in order of preference:
- 1. the collection archive, discovered by scraping shtooka.net /
-    swac-collections.org download pages (FLAC originals);
- 2. the same collection's files on Wikimedia Commons (En-uk-<word>.ogg),
-    fetched with one batched API query and polite, 429-aware downloads.
+ 1. a live collection archive, discovered by scraping shtooka.net and
+    known mirror pages (FLAC originals);
+ 2. the Internet Archive's Wayback Machine snapshots of the retired
+    packs.shtooka.net host (index + individual files, or the tar);
+ 3. the same collection's files on Wikimedia Commons (En-uk-<word>.ogg),
+    fetched with batched API queries and polite, 429-aware downloads.
 
 Idempotent: words that already have a file in the source directory are
 kept as they are. Stdlib only. Writes fetch-report.json with provenance.
@@ -40,21 +42,26 @@ OUT_DIR = os.path.join("public", "audio", "minimal-pairs", "source")
 AUDIO_EXTS = (".flac", ".ogg", ".oga", ".mp3", ".wav")
 
 DOWNLOAD_PAGES = [
-    "https://shtooka.net/download.php",
-    "http://shtooka.net/download.php",
-    "http://swac-collections.org/download.php",
-    "http://swac-collections.org/",
+    "https://shtooka.net/",
+    "https://shtooka.net/overview.php?lang=eng",
+    "https://fsi-languages.yojik.eu/audiocollections/audiocollections.html",
 ]
 DIRECT_ARCHIVE_GUESSES = [
     "https://shtooka.net/packs/eng-balm-judith.tar",
-    "http://swac-collections.org/packs/eng-balm-judith.tar",
+]
+
+WAYBACK_CDX = "https://web.archive.org/cdx/search/cdx"
+WAYBACK_PATTERNS = [
+    "packs.shtooka.net/eng-balm-judith*",
+    "download.shtooka.net/eng-balm-judith*",
+    "shtooka.net/packs/eng-balm-judith*",
 ]
 
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 SHTOOKA_CATEGORY = "Category:Audio files from Shtooka Project (English)"
 POLITE_DELAY = 1.2  # s between consecutive Wikimedia requests
 
-UA = {"User-Agent": "minimal-pairs-fetcher/2.0 (https://github.com/dariopicozzi/dariopicozzi.github.io; audio credits workflow)"}
+UA = {"User-Agent": "minimal-pairs-fetcher/3.0 (https://github.com/dariopicozzi/dariopicozzi.github.io; audio credits workflow)"}
 
 
 def log(*args):
@@ -88,6 +95,16 @@ def get(url, tries=3, timeout=30):
     raise last
 
 
+def save_clip(word, ext, data):
+    for old in os.listdir(OUT_DIR):
+        if os.path.splitext(old)[0] == word and old.endswith(AUDIO_EXTS):
+            os.remove(os.path.join(OUT_DIR, old))
+    dest = os.path.join(OUT_DIR, word + ext)
+    with open(dest, "wb") as f:
+        f.write(data)
+    return dest
+
+
 def parse_tags(text):
     """Parse a SWAC index.tags.txt into {section_name: {key: value}}."""
     entries = {}
@@ -112,11 +129,14 @@ def norm(s):
 
 
 def match_word(entries, word):
+    """Exact-text match only: the track needs the bare word as recorded."""
     for section, tags in entries.items():
         if norm(tags.get("SWAC_TEXT", "")) == word:
             return section, tags
     return None, None
 
+
+# --- route 1: live archives ------------------------------------------------
 
 def discover_archive_urls():
     urls = []
@@ -126,10 +146,12 @@ def discover_archive_urls():
         except Exception as e:  # noqa: BLE001
             log(f"download page unavailable: {page} ({e})")
             continue
+        found = 0
         for href in re.findall(r"""href=["']([^"']+)["']""", html):
             if re.search(r"judith|eng-balm", href, re.I):
                 urls.append(urllib.parse.urljoin(page, href))
-        log(f"scraped {page}: {len(urls)} candidate link(s) so far")
+                found += 1
+        log(f"scraped {page}: {found} candidate link(s)")
     urls.extend(DIRECT_ARCHIVE_GUESSES)
     seen, ordered = set(), []
     for u in urls:
@@ -139,8 +161,8 @@ def discover_archive_urls():
     return ordered
 
 
-def entries_from_archive(blob, label):
-    """Extract needed words from a tar/zip archive blob. Returns report entries."""
+def entries_from_archive(blob, label, wanted):
+    """Extract wanted words from a tar/zip archive blob. Returns report entries."""
     if blob[:2] == b"PK":
         zf = zipfile.ZipFile(io.BytesIO(blob))
         names = zf.namelist()
@@ -156,7 +178,7 @@ def entries_from_archive(blob, label):
     entries = parse_tags(read(index_name).decode("utf-8", "replace"))
     prefix = os.path.dirname(index_name)
     got = {}
-    for word in WORDS:
+    for word in wanted:
         section, tags = match_word(entries, word)
         if section is None:
             continue
@@ -166,9 +188,7 @@ def entries_from_archive(blob, label):
             if member is None:
                 continue
         ext = os.path.splitext(member)[1] or ".flac"
-        dest = os.path.join(OUT_DIR, word + ext)
-        with open(dest, "wb") as f:
-            f.write(read(member))
+        dest = save_clip(word, ext, read(member))
         log(f"  {word}: archive:{member} -> {dest}")
         got[word] = {"status": "ok", "file": os.path.basename(dest),
                      "url": f"{label}#{member}", "match": "archive", "tags": tags}
@@ -177,8 +197,6 @@ def entries_from_archive(blob, label):
 
 def fetch_via_archives(missing):
     for url in discover_archive_urls():
-        if not missing:
-            break
         base = url.split("?")[0].lower()
         if not base.endswith((".tar", ".tar.gz", ".tgz", ".zip")):
             continue
@@ -189,11 +207,101 @@ def fetch_via_archives(missing):
             continue
         log(f"downloaded archive: {url} ({len(blob)} bytes)")
         try:
-            return entries_from_archive(blob, url)
+            got = entries_from_archive(blob, url, missing)
+            if got:
+                return got
         except Exception as e:  # noqa: BLE001
             log(f"  archive unreadable: {e}")
     return {}
 
+
+# --- route 2: Wayback Machine ----------------------------------------------
+
+def cdx_snapshots(pattern):
+    q = urllib.parse.urlencode({"url": pattern, "output": "json", "limit": "3000"})
+    data = json.loads(get(f"{WAYBACK_CDX}?{q}", tries=3, timeout=90).decode("utf-8", "replace"))
+    if not data:
+        return []
+    rows = [dict(zip(data[0], row)) for row in data[1:]]
+    return [r for r in rows if r.get("statuscode") in ("200", "-")]
+
+
+def wayback_bytes(timestamp, original, timeout=600):
+    return get(f"https://web.archive.org/web/{timestamp}id_/{original}",
+               tries=3, timeout=timeout)
+
+
+def fetch_via_wayback(missing):
+    got = {}
+    for pattern in WAYBACK_PATTERNS:
+        still = [w for w in missing if w not in got]
+        if not still:
+            break
+        try:
+            rows = cdx_snapshots(pattern)
+        except Exception as e:  # noqa: BLE001
+            log(f"wayback cdx failed for {pattern}: {e}")
+            continue
+        log(f"wayback: {len(rows)} snapshots for {pattern}")
+        if not rows:
+            continue
+        rows.sort(key=lambda r: r["timestamp"], reverse=True)
+
+        index_row = next((r for r in rows if r["original"].endswith("index.tags.txt")), None)
+        if index_row:
+            try:
+                text = wayback_bytes(index_row["timestamp"], index_row["original"],
+                                     timeout=90).decode("utf-8", "replace")
+                entries = parse_tags(text)
+                log(f"  archived index {index_row['original']}: {len(entries)} entries")
+                with open(os.path.join(OUT_DIR, "index.tags.txt"), "w", encoding="utf-8") as f:
+                    f.write(text)
+                base = index_row["original"].rsplit("/", 1)[0] + "/"
+                newest = {}
+                for r in rows:
+                    newest.setdefault(r["original"], r)
+                for word in still:
+                    section, tags = match_word(entries, word)
+                    if section is None:
+                        log(f"  not in archived index: {word}")
+                        continue
+                    original = urllib.parse.urljoin(base, section.lstrip("./"))
+                    snap = newest.get(original) or {"timestamp": index_row["timestamp"],
+                                                    "original": original}
+                    try:
+                        data = wayback_bytes(snap["timestamp"], snap["original"], timeout=120)
+                    except Exception as e:  # noqa: BLE001
+                        log(f"  wayback file fetch failed for {word}: {e}")
+                        continue
+                    ext = os.path.splitext(original)[1] or ".flac"
+                    dest = save_clip(word, ext, data)
+                    log(f"  {word}: wayback {original} -> {dest} ({len(data)} bytes)")
+                    got[word] = {
+                        "status": "ok", "file": os.path.basename(dest),
+                        "url": f"https://web.archive.org/web/{snap['timestamp']}/{original}",
+                        "match": "wayback", "tags": tags,
+                    }
+                    time.sleep(0.5)
+            except Exception as e:  # noqa: BLE001
+                log(f"  archived index route failed: {e}")
+
+        still = [w for w in missing if w not in got]
+        if not still:
+            break
+        archive_row = next((r for r in rows
+                            if r["original"].split("?")[0].endswith((".tar", ".tar.gz", ".tgz", ".zip"))), None)
+        if archive_row:
+            try:
+                blob = wayback_bytes(archive_row["timestamp"], archive_row["original"])
+                log(f"  wayback archive {archive_row['original']} ({len(blob)} bytes)")
+                got.update(entries_from_archive(
+                    blob, f"wayback:{archive_row['original']}", still))
+            except Exception as e:  # noqa: BLE001
+                log(f"  wayback archive failed: {e}")
+    return got
+
+
+# --- route 3: Wikimedia Commons --------------------------------------------
 
 def commons_api(params):
     q = urllib.parse.urlencode({**params, "format": "json", "formatversion": "2", "maxlag": "5"})
@@ -223,6 +331,8 @@ def pick_commons_pages(pages_by_title, words):
                 score = (2 if judith else 1) + (1 if is_uk else 0)
                 if best is None or score > best[0]:
                     best = (score, title, page)
+            else:
+                log(f"  exists but lacks Shtooka/Judith evidence: {title}")
         if best:
             chosen[word] = best[1:]
     return chosen
@@ -252,6 +362,30 @@ def commons_query_titles(titles):
     return pages_by_title
 
 
+def commons_inventory():
+    """All plausibly-relevant Commons titles: Shtooka English category + En-uk- prefix."""
+    titles = set()
+    cont = {}
+    while True:
+        data = commons_api({"action": "query", "list": "categorymembers",
+                            "cmtitle": SHTOOKA_CATEGORY, "cmnamespace": "6",
+                            "cmlimit": "500", **cont})
+        titles.update(m["title"] for m in data["query"]["categorymembers"])
+        cont = data.get("continue") or {}
+        if not cont:
+            break
+    cont = {}
+    while True:
+        data = commons_api({"action": "query", "list": "allpages",
+                            "apnamespace": "6", "apprefix": "En-uk-",
+                            "aplimit": "500", **cont})
+        titles.update(p["title"] for p in data["query"]["allpages"])
+        cont = data.get("continue") or {}
+        if not cont:
+            break
+    return sorted(titles)
+
+
 def fetch_via_commons(missing):
     titles = [t for w in missing for t in candidate_titles(w)]
     try:
@@ -264,30 +398,22 @@ def fetch_via_commons(missing):
 
     leftovers = [w for w in missing if w not in chosen]
     if leftovers:
-        log(f"category scan for: {', '.join(leftovers)}")
+        log(f"inventory scan for: {', '.join(leftovers)}")
         try:
-            members, cont = [], {}
-            while True:
-                data = commons_api({
-                    "action": "query", "list": "categorymembers",
-                    "cmtitle": SHTOOKA_CATEGORY, "cmnamespace": "6",
-                    "cmlimit": "500", **cont,
-                })
-                members += [m["title"] for m in data["query"]["categorymembers"]]
-                cont = data.get("continue")
-                if not cont:
-                    break
-            log(f"  category has {len(members)} files")
+            inventory = commons_inventory()
+            log(f"  inventory: {len(inventory)} files")
+            with open(os.path.join(OUT_DIR, "commons-inventory.txt"), "w", encoding="utf-8") as f:
+                f.write("\n".join(inventory) + "\n")
             extra = []
             for w in leftovers:
                 pat = re.compile(rf"^File:En-(uk-)?{re.escape(w)}( \(\d+\))?\.(ogg|oga|flac)$", re.I)
-                extra += [t for t in members if pat.match(t)]
+                extra += [t for t in inventory if pat.match(t)]
             if extra:
                 pages.update(commons_query_titles(extra))
                 for w, picked in pick_commons_pages(pages, leftovers).items():
                     chosen[w] = picked
         except Exception as e:  # noqa: BLE001
-            log(f"  category scan failed: {e}")
+            log(f"  inventory scan failed: {e}")
 
     got = {}
     for word, (title, page) in chosen.items():
@@ -298,9 +424,7 @@ def fetch_via_commons(missing):
             continue
         time.sleep(POLITE_DELAY)
         ext = os.path.splitext(urllib.parse.urlparse(page["url"]).path)[1] or ".ogg"
-        dest = os.path.join(OUT_DIR, word + ext)
-        with open(dest, "wb") as f:
-            f.write(data)
+        dest = save_clip(word, ext, data)
         log(f"{word}: commons {title} -> {dest} ({len(data)} bytes)")
         got[word] = {"status": "ok", "file": os.path.basename(dest),
                      "url": page["url"], "match": "commons", "commons_title": title}
@@ -328,11 +452,10 @@ def main():
     missing = [w for w in WORDS if w not in words_report]
     log(f"already present: {len(words_report)}; to fetch: {len(missing)}")
 
-    if missing:
-        words_report.update(fetch_via_archives(missing))
-        missing = [w for w in WORDS if w not in words_report]
-    if missing:
-        words_report.update(fetch_via_commons(missing))
+    for fetcher in (fetch_via_archives, fetch_via_wayback, fetch_via_commons):
+        if not missing:
+            break
+        words_report.update(fetcher(missing))
         missing = [w for w in WORDS if w not in words_report]
 
     report = {"pairs": PAIRS, "words": words_report, "missing": missing}
