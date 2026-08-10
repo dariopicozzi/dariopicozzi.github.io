@@ -1,0 +1,116 @@
+{
+  "words": {
+    "man": {
+      "status": "ok",
+      "file": "man.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/6/6d/En-uk-man.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "match": "commons",
+      "commons_title": "File:En-uk-man.ogg"
+    },
+    "full": {
+      "status": "ok",
+      "file": "full.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/fc/En-uk-full.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "match": "commons",
+      "commons_title": "File:En-uk-full.ogg"
+    },
+    "they": {
+      "status": "ok",
+      "file": "they.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/52/En-uk-they.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "match": "commons",
+      "commons_title": "File:En-uk-they.ogg"
+    },
+    "wine": {
+      "status": "ok",
+      "file": "wine.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/25/En-uk-wine.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "match": "commons",
+      "commons_title": "File:En-uk-wine.ogg"
+    },
+    "hair": {
+      "status": "ok",
+      "file": "hair.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8a/En-uk-hair.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "match": "commons",
+      "commons_title": "File:En-uk-hair.ogg"
+    },
+    "air": {
+      "status": "ok",
+      "file": "air.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/1/19/En-uk-air.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "match": "commons",
+      "commons_title": "File:En-uk-air.ogg"
+    }
+  },
+  "pairs": [
+    [
+      "sheep",
+      "ship"
+    ],
+    [
+      "sit",
+      "set"
+    ],
+    [
+      "men",
+      "man"
+    ],
+    [
+      "full",
+      "fool"
+    ],
+    [
+      "luck",
+      "look"
+    ],
+    [
+      "rice",
+      "rise"
+    ],
+    [
+      "thin",
+      "tin"
+    ],
+    [
+      "they",
+      "day"
+    ],
+    [
+      "wine",
+      "vine"
+    ],
+    [
+      "hair",
+      "air"
+    ],
+    [
+      "berry",
+      "very"
+    ],
+    [
+      "cap",
+      "cab"
+    ]
+  ],
+  "missing": [
+    "sheep",
+    "ship",
+    "sit",
+    "set",
+    "men",
+    "fool",
+    "luck",
+    "look",
+    "rice",
+    "rise",
+    "thin",
+    "tin",
+    "day",
+    "vine",
+    "berry",
+    "very",
+    "cap",
+    "cab"
+  ]
+}
