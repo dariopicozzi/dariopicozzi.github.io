@@ -115,13 +115,6 @@ def main():
     for word, start, dur in timeline:
         print(f"  {start:7.2f}s  {word:<6} ({dur:.2f}s)")
 
-    flac_path = os.path.join(BASE, "minimal-pairs-judith.flac")
-    mp3_path = os.path.join(BASE, "minimal-pairs-judith.mp3")
-    sf.write(flac_path, track, rate)
-    sf.write(mp3_path, track, rate)
-    print(f"wrote {flac_path} ({os.path.getsize(flac_path)} bytes)")
-    print(f"wrote {mp3_path} ({os.path.getsize(mp3_path)} bytes)")
-
     speaker = "Judith Frank"
     for info in report["words"].values():
         name = (info.get("tags") or {}).get("SWAC_SPEAK_NAME")
@@ -129,6 +122,35 @@ def main():
             speaker = name
             break
     src_desc = report.get("index_url") or report.get("tar_url") or "Shtooka Project"
+    title = "English minimal pairs (each word twice)"
+    album = "Shtooka Project - eng-balm-judith"
+    licence = f"CC BY 3.0 - voice: {speaker}, Shtooka Project (eng-balm-judith). https://creativecommons.org/licenses/by/3.0/"
+
+    flac_path = os.path.join(BASE, "minimal-pairs-judith.flac")
+    mp3_path = os.path.join(BASE, "minimal-pairs-judith.mp3")
+    sf.write(flac_path, track, rate)
+    sf.write(mp3_path, track, rate)
+    print(f"wrote {flac_path} ({os.path.getsize(flac_path)} bytes)")
+    print(f"wrote {mp3_path} ({os.path.getsize(mp3_path)} bytes)")
+
+    try:
+        from mutagen.flac import FLAC
+        from mutagen.id3 import COMM, ID3, TALB, TCOP, TIT2, TPE1
+
+        id3 = ID3()
+        id3.add(TIT2(encoding=3, text=title))
+        id3.add(TPE1(encoding=3, text=speaker))
+        id3.add(TALB(encoding=3, text=album))
+        id3.add(TCOP(encoding=3, text=licence))
+        id3.add(COMM(encoding=3, lang="eng", desc="licence", text=licence))
+        id3.save(mp3_path)
+        fl = FLAC(flac_path)
+        fl["title"], fl["artist"], fl["album"] = [title], [speaker], [album]
+        fl["copyright"], fl["license"] = [licence], ["https://creativecommons.org/licenses/by/3.0/"]
+        fl.save()
+        print("tagged mp3 + flac")
+    except ImportError:
+        print("mutagen not installed - files written without tags")
     with open(os.path.join(BASE, "CREDITS.txt"), "w", encoding="utf-8") as f:
         f.write(
             "English minimal pairs - listening track\n"
