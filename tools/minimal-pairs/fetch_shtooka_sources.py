@@ -458,19 +458,19 @@ def main():
         words_report.update(fetcher(missing))
         missing = [w for w in WORDS if w not in words_report]
 
+    words_report.update(judith_flac_pass(words_report))
+    if any(not os.path.exists(os.path.join(OUT_DIR, f"article-a-{w}.flac"))
+           for w in ARTICLE_TEXTS.values()):
+        fetch_article_clips()
+
     report = {"pairs": PAIRS, "words": words_report, "missing": missing}
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
     if missing:
-        fetch_article_clips()
         survey()
     log(f"\ndone: {len(WORDS) - len(missing)}/{len(WORDS)} words available")
     if missing:
         log("missing: " + ", ".join(missing))
-
-
-if __name__ == "__main__":
-    sys.exit(main())
 
 
 # --- survey: what could cover the words this collection lacks ---------------
@@ -563,7 +563,8 @@ def fetch_article_clips():
     """Judith's 'a <word>' recordings, kept beside the bare-word files."""
     for word, title in ARTICLE_CLIPS.items():
         dest = os.path.join(OUT_DIR, f"article-a-{word}.ogg")
-        if os.path.exists(dest):
+        if os.path.exists(dest) or os.path.exists(
+                os.path.join(OUT_DIR, f"article-a-{word}.flac")):
             continue
         try:
             pages = commons_query_titles([title])
@@ -581,8 +582,82 @@ def fetch_article_clips():
 
 
 def survey():
-    report = {"shtooka_collections": survey_shtooka_collections(),
+    try:
+        tars = sorted({r["original"] for r in cdx_query(
+            {"url": "download.shtooka.net*", "matchType": "prefix",
+             "filter": "original:.*\\.tar$", "collapse": "urlkey"})
+            if r.get("statuscode") in ("200", "-")})
+    except Exception as e:  # noqa: BLE001
+        log(f"tar listing failed: {e}")
+        tars = []
+    log(f"archived tars: {len(tars)} " + " ".join(tars[:20]))
+    report = {"archived_tars": tars,
+              "shtooka_collections": survey_shtooka_collections(),
               "commons_voices": survey_commons_voices()}
     with open(SURVEY_PATH, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
     log(f"wrote {SURVEY_PATH}")
+
+
+# --- Judith FLAC originals from the archived collection tar -----------------
+
+JUDITH_TAR_PATTERN = "download.shtooka.net/eng-balm-judith*"
+ARTICLE_TEXTS = {"a sheep": "sheep", "a ship": "ship", "a day": "day"}
+
+
+def judith_flac_pass(words_report):
+    """Fetch the archived FLAC tar once: upgrade bare words to the lossless
+    originals and extract the 'a <word>' clips the collection has instead
+    of bare nouns. Skips entirely when nothing is left to upgrade."""
+    needs_upgrade = [w for w, e in words_report.items()
+                     if not e.get("file", "").endswith(".flac")]
+    articles_missing = [w for w in ARTICLE_TEXTS.values()
+                        if not os.path.exists(os.path.join(OUT_DIR, f"article-a-{w}.flac"))]
+    if not needs_upgrade and not articles_missing:
+        return {}
+    try:
+        rows = cdx_snapshots(JUDITH_TAR_PATTERN)
+    except Exception as e:  # noqa: BLE001
+        log(f"judith tar cdx failed: {e}")
+        return {}
+    row = next((r for r in sorted(rows, key=lambda r: r["timestamp"], reverse=True)
+                if r["original"].split("?")[0].endswith("_flac.tar")), None)
+    if row is None:
+        log("no archived flac tar for eng-balm-judith")
+        return {}
+    try:
+        blob = wayback_bytes(row["timestamp"], row["original"])
+    except Exception as e:  # noqa: BLE001
+        log(f"judith tar fetch failed: {e}")
+        return {}
+    label = f"wayback:{row['original']}"
+    log(f"judith flac tar: {row['original']} ({len(blob)} bytes)")
+    got = entries_from_archive(blob, label, WORDS)
+
+    tf = tarfile.open(fileobj=io.BytesIO(blob))
+    names = tf.getnames()
+    index_name = next((n for n in names if n.endswith("index.tags.txt")), None)
+    if index_name is None:
+        return got
+    entries = parse_tags(tf.extractfile(index_name).read().decode("utf-8", "replace"))
+    prefix = os.path.dirname(index_name)
+    for text, word in ARTICLE_TEXTS.items():
+        section = next((s for s, t in entries.items()
+                        if norm(t.get("SWAC_TEXT", "")) == text), None)
+        if section is None:
+            log(f"  article text not in index: {text!r}")
+            continue
+        member = "/".join(p for p in (prefix, section.lstrip("./")) if p)
+        if member not in names:
+            member = next((n for n in names if n.endswith("/" + os.path.basename(section))), None)
+            if member is None:
+                continue
+        dest = os.path.join(OUT_DIR, f"article-a-{word}.flac")
+        with open(dest, "wb") as f:
+            f.write(tf.extractfile(member).read())
+        log(f"  article clip: {text!r} -> {dest}")
+    return got
+
+
+if __name__ == "__main__":
+    sys.exit(main())
