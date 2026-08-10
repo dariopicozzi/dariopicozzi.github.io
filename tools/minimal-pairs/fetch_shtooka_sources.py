@@ -461,6 +461,9 @@ def main():
     report = {"pairs": PAIRS, "words": words_report, "missing": missing}
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
+    if missing:
+        fetch_article_clips()
+        survey()
     log(f"\ndone: {len(WORDS) - len(missing)}/{len(WORDS)} words available")
     if missing:
         log("missing: " + ", ".join(missing))
@@ -468,3 +471,118 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+# --- survey: what could cover the words this collection lacks ---------------
+
+SURVEY_PATH = os.path.join(OUT_DIR, "coverage-report.json")
+ARTICLE_CLIPS = {  # Judith recordings that exist only with a spoken article
+    "sheep": "File:En-uk-a sheep.ogg",
+    "ship": "File:En-uk-a ship.ogg",
+    "day": "File:En-uk-a day.ogg",
+}
+
+
+def cdx_query(params):
+    q = urllib.parse.urlencode({"output": "json", "limit": "1000", **params})
+    data = json.loads(get(f"{WAYBACK_CDX}?{q}", tries=3, timeout=90).decode("utf-8", "replace"))
+    if not data:
+        return []
+    return [dict(zip(data[0], row)) for row in data[1:]]
+
+
+def survey_shtooka_collections():
+    """Coverage of every archived English Shtooka collection index."""
+    out = {}
+    try:
+        rows = cdx_query({"url": "packs.shtooka.net*", "matchType": "prefix",
+                          "filter": "original:.*index\\.tags\\.txt$",
+                          "collapse": "urlkey"})
+    except Exception as e:  # noqa: BLE001
+        log(f"survey cdx failed: {e}")
+        return out
+    originals = sorted({r["original"] for r in rows
+                        if "/eng" in r["original"] and r.get("statuscode") in ("200", "-")})
+    log(f"survey: {len(originals)} archived English index files")
+    for original in originals:
+        snaps = [r for r in rows if r["original"] == original]
+        snap = max(snaps, key=lambda r: r["timestamp"])
+        try:
+            entries = parse_tags(wayback_bytes(snap["timestamp"], original,
+                                               timeout=90).decode("utf-8", "replace"))
+        except Exception as e:  # noqa: BLE001
+            log(f"  index fetch failed {original}: {e}")
+            continue
+        glob_tags = entries.get("GLOBAL", {})
+        texts = [norm(t.get("SWAC_TEXT", "")) for s, t in entries.items() if s != "GLOBAL"]
+        coverage = {}
+        for word in WORDS:
+            if word in texts:
+                coverage[word] = "exact"
+            else:
+                variants = sorted({t for t in texts
+                                   if re.search(rf"\b{re.escape(word)}\b", t)})[:4]
+                coverage[word] = variants or None
+        exact = sum(1 for v in coverage.values() if v == "exact")
+        out[original] = {
+            "speaker": glob_tags.get("SWAC_SPEAK_NAME"),
+            "gender": glob_tags.get("SWAC_SPEAK_GENDER"),
+            "country": glob_tags.get("SWAC_SPEAK_LANG_COUNTRY"),
+            "region": glob_tags.get("SWAC_SPEAK_LANG_REGION"),
+            "license": glob_tags.get("SWAC_COLL_LICENSE"),
+            "entries": len(texts), "exact_words": exact, "coverage": coverage,
+        }
+        log(f"  {original}: speaker={out[original]['speaker']} "
+            f"({out[original]['gender']}, {out[original]['country']}) "
+            f"exact {exact}/{len(WORDS)}")
+    return out
+
+
+def survey_commons_voices():
+    """Existence of complete single-voice alternatives on Commons."""
+    patterns = {
+        "commons-en-us (Shtooka US)": lambda w: f"File:En-us-{w}.ogg",
+        "commons-LL-Vealhurl (Lingua Libre UK)": lambda w: f"File:LL-Q1860 (eng)-Vealhurl-{w}.wav",
+    }
+    out = {}
+    for label, make in patterns.items():
+        titles = [make(w) for w in WORDS]
+        try:
+            pages = commons_query_titles(titles)
+        except Exception as e:  # noqa: BLE001
+            log(f"survey commons failed for {label}: {e}")
+            continue
+        coverage = {w: ("exact" if make(w).lower() in pages else None) for w in WORDS}
+        exact = sum(1 for v in coverage.values() if v == "exact")
+        out[label] = {"exact_words": exact, "coverage": coverage}
+        log(f"  {label}: exact {exact}/{len(WORDS)}")
+    return out
+
+
+def fetch_article_clips():
+    """Judith's 'a <word>' recordings, kept beside the bare-word files."""
+    for word, title in ARTICLE_CLIPS.items():
+        dest = os.path.join(OUT_DIR, f"article-a-{word}.ogg")
+        if os.path.exists(dest):
+            continue
+        try:
+            pages = commons_query_titles([title])
+            page = pages.get(title.lower())
+            if not page:
+                log(f"article clip missing on commons: {title}")
+                continue
+            data = get(page["url"], tries=4)
+            time.sleep(POLITE_DELAY)
+            with open(dest, "wb") as f:
+                f.write(data)
+            log(f"article clip: {title} -> {dest} ({len(data)} bytes)")
+        except Exception as e:  # noqa: BLE001
+            log(f"article clip failed for {word}: {e}")
+
+
+def survey():
+    report = {"shtooka_collections": survey_shtooka_collections(),
+              "commons_voices": survey_commons_voices()}
+    with open(SURVEY_PATH, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
+    log(f"wrote {SURVEY_PATH}")
