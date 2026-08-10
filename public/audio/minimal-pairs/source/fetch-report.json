@@ -52,59 +52,83 @@
   "words": {
     "man": {
       "status": "ok",
-      "file": "man.ogg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/6/6d/En-uk-man.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-      "match": "commons",
-      "commons_title": "File:En-uk-man.ogg"
+      "file": "man.flac",
+      "url": "wayback:http://download.shtooka.net/eng-balm-judith_flac.tar#flac/eng-69a297d8.flac",
+      "match": "archive",
+      "tags": {
+        "SWAC_ALPHAIDX": "man",
+        "SWAC_TEXT": "man"
+      }
     },
     "full": {
       "status": "ok",
-      "file": "full.ogg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/f/fc/En-uk-full.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-      "match": "commons",
-      "commons_title": "File:En-uk-full.ogg"
+      "file": "full.flac",
+      "url": "wayback:http://download.shtooka.net/eng-balm-judith_flac.tar#flac/eng-e07fd4a0.flac",
+      "match": "archive",
+      "tags": {
+        "SWAC_ALPHAIDX": "full",
+        "SWAC_TEXT": "full"
+      }
     },
     "rice": {
       "status": "ok",
-      "file": "rice.ogg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/6/62/En-uk-rice.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-      "match": "commons",
-      "commons_title": "File:En-uk-rice.ogg"
+      "file": "rice.flac",
+      "url": "wayback:http://download.shtooka.net/eng-balm-judith_flac.tar#flac/eng-d47cea17.flac",
+      "match": "archive",
+      "tags": {
+        "SWAC_ALPHAIDX": "rice",
+        "SWAC_TEXT": "rice"
+      }
     },
     "they": {
       "status": "ok",
-      "file": "they.ogg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/5/52/En-uk-they.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-      "match": "commons",
-      "commons_title": "File:En-uk-they.ogg"
+      "file": "they.flac",
+      "url": "wayback:http://download.shtooka.net/eng-balm-judith_flac.tar#flac/eng-b28e2435.flac",
+      "match": "archive",
+      "tags": {
+        "SWAC_ALPHAIDX": "they",
+        "SWAC_TEXT": "they"
+      }
     },
     "wine": {
       "status": "ok",
-      "file": "wine.ogg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/2/25/En-uk-wine.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-      "match": "commons",
-      "commons_title": "File:En-uk-wine.ogg"
+      "file": "wine.flac",
+      "url": "wayback:http://download.shtooka.net/eng-balm-judith_flac.tar#flac/eng-560c6468.flac",
+      "match": "archive",
+      "tags": {
+        "SWAC_ALPHAIDX": "wine",
+        "SWAC_TEXT": "wine"
+      }
     },
     "hair": {
       "status": "ok",
-      "file": "hair.ogg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8a/En-uk-hair.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-      "match": "commons",
-      "commons_title": "File:En-uk-hair.ogg"
+      "file": "hair.flac",
+      "url": "wayback:http://download.shtooka.net/eng-balm-judith_flac.tar#flac/eng-9cf76119.flac",
+      "match": "archive",
+      "tags": {
+        "SWAC_ALPHAIDX": "hair",
+        "SWAC_TEXT": "hair"
+      }
     },
     "air": {
       "status": "ok",
-      "file": "air.ogg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/1/19/En-uk-air.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-      "match": "commons",
-      "commons_title": "File:En-uk-air.ogg"
+      "file": "air.flac",
+      "url": "wayback:http://download.shtooka.net/eng-balm-judith_flac.tar#flac/eng-bc60b8fb.flac",
+      "match": "archive",
+      "tags": {
+        "SWAC_ALPHAIDX": "air",
+        "SWAC_TEXT": "air"
+      }
     },
     "very": {
       "status": "ok",
-      "file": "very.ogg",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/b/bf/En-uk-very.ogg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-      "match": "commons",
-      "commons_title": "File:En-uk-very.ogg"
+      "file": "very.flac",
+      "url": "wayback:http://download.shtooka.net/eng-balm-judith_flac.tar#flac/eng-15dcfb7b.flac",
+      "match": "archive",
+      "tags": {
+        "SWAC_ALPHAIDX": "very",
+        "SWAC_TEXT": "very"
+      }
     }
   },
   "missing": [

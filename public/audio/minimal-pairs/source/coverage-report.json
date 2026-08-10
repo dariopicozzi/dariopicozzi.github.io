@@ -1,0 +1,64 @@
+{
+  "archived_tars": [],
+  "shtooka_collections": {},
+  "commons_voices": {
+    "commons-en-us (Shtooka US)": {
+      "exact_words": 22,
+      "coverage": {
+        "sheep": "exact",
+        "ship": "exact",
+        "sit": "exact",
+        "set": "exact",
+        "men": "exact",
+        "man": "exact",
+        "full": "exact",
+        "fool": null,
+        "luck": "exact",
+        "look": null,
+        "rice": "exact",
+        "rise": "exact",
+        "thin": "exact",
+        "tin": "exact",
+        "they": "exact",
+        "day": "exact",
+        "wine": "exact",
+        "vine": "exact",
+        "hair": "exact",
+        "air": "exact",
+        "berry": "exact",
+        "very": "exact",
+        "cap": "exact",
+        "cab": "exact"
+      }
+    },
+    "commons-LL-Vealhurl (Lingua Libre UK)": {
+      "exact_words": 2,
+      "coverage": {
+        "sheep": null,
+        "ship": null,
+        "sit": null,
+        "set": null,
+        "men": null,
+        "man": null,
+        "full": null,
+        "fool": "exact",
+        "luck": null,
+        "look": "exact",
+        "rice": null,
+        "rise": null,
+        "thin": null,
+        "tin": null,
+        "they": null,
+        "day": null,
+        "wine": null,
+        "vine": null,
+        "hair": null,
+        "air": null,
+        "berry": null,
+        "very": null,
+        "cap": null,
+        "cab": null
+      }
+    }
+  }
+}
