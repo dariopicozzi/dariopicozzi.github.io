@@ -1,6 +1,16 @@
 {
   "papers": [
     {
+      "title": "The information geometry of large language models is shared, learned, and controllable",
+      "authors": ["Dario Picozzi"],
+      "venue": "arXiv preprint",
+      "year": 2026,
+      "status": "preprint",
+      "arxiv": "2609.11063",
+      "links": { "arXiv": "https://arxiv.org/abs/2609.11063" },
+      "summary": "Shows that the Fisher–Rao geometry of next-token probabilities captures structure shared across language-model architectures and shaped by training data. This geometry guides targeted changes to model behaviour while limiting disturbance elsewhere, with applications to steering, editing, attribution, dictionary learning and fine-tuning."
+    },
+    {
       "title": "A hardware-efficient variational ansatz with an exact diagonal metric for real- and imaginary-time evolution and Haar sampling",
       "authors": ["Dario Picozzi"],
       "venue": "arXiv preprint",
