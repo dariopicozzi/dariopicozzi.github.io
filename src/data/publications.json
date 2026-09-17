@@ -3,7 +3,7 @@
     {
       "title": "The information geometry of large language models is shared, learned, and controllable",
       "authors": ["Dario Picozzi"],
-      "venue": "arXiv preprint",
+      "venue": "arXiv",
       "year": 2026,
       "status": "preprint",
       "arxiv": "2609.11063",
@@ -13,7 +13,7 @@
     {
       "title": "A hardware-efficient variational ansatz with an exact diagonal metric for real- and imaginary-time evolution and Haar sampling",
       "authors": ["Dario Picozzi"],
-      "venue": "arXiv preprint",
+      "venue": "arXiv",
       "review": "Under review at PRX Quantum",
       "year": 2026,
       "status": "preprint",
@@ -33,7 +33,7 @@
     {
       "title": "Symmetry-adapted qubit encoding with complete active space and Bravyi–Kitaev mapping for quantum chemistry on a quantum computer",
       "authors": ["Dario Picozzi", "Jonathan Tennyson"],
-      "venue": "arXiv preprint",
+      "venue": "arXiv",
       "review": "Under review at Journal of Chemical Theory and Computation",
       "year": 2026,
       "status": "preprint",
@@ -44,7 +44,7 @@
     {
       "title": "Periodic symmetry-adapted encoding: qubit reduction in crystalline electronic structure",
       "authors": ["Dario Picozzi"],
-      "venue": "arXiv preprint",
+      "venue": "arXiv",
       "review": "Under review at npj Quantum Information",
       "year": 2026,
       "status": "preprint",
@@ -70,7 +70,7 @@
     {
       "title": "Pascal's pyramid and number projection operators for quantum computation",
       "authors": ["Dario Picozzi"],
-      "venue": "arXiv preprint",
+      "venue": "arXiv",
       "year": 2024,
       "status": "preprint",
       "arxiv": "2407.16561",

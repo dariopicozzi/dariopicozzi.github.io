@@ -61,7 +61,7 @@ const publicationsLd = {
 
 <Base
   title="Publications · Dario Picozzi"
-  description="Papers and preprints by Dario Picozzi on quantum computing, symmetry-adapted encodings and the information geometry of machine learning."
+  description="Research papers by Dario Picozzi on quantum computing, symmetry-adapted encodings and the information geometry of machine learning."
 >
   <script type="application/ld+json" set:html={JSON.stringify(publicationsLd)} slot="head" />
 
@@ -94,8 +94,7 @@ const publicationsLd = {
               </p>
               <p class="venue">
                 {p.venue}
-                {p.review && <> · {p.review}</>}
-                {p.status === 'preprint' && <span class="badge">preprint</span>}
+                {p.review && <><br />{p.review}</>}
               </p>
               <p class="summary">{p.summary}</p>
               <p class="links">
@@ -149,19 +148,6 @@ const publicationsLd = {
   .authors { margin: 0 0 0.15em; font-size: 0.92rem; color: var(--ink-soft); }
   .authors .me { color: var(--ink); font-weight: 560; }
   .venue { margin: 0 0 0.5em; font-size: 0.92rem; font-style: italic; color: var(--ink-soft); }
-  .badge {
-    font-style: normal;
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    border: 1px solid var(--line);
-    border-radius: 5px;
-    padding: 0.12em 0.5em;
-    margin-left: 0.6em;
-    vertical-align: middle;
-  }
   .summary { font-size: 0.95rem; color: var(--ink-soft); }
   .links { display: flex; flex-wrap: wrap; gap: 1.1rem; margin: 0; font-size: 0.9rem; }
   .thesis { margin-block: 3rem; padding-top: 1.6rem; border-top: 1px solid var(--line); }
