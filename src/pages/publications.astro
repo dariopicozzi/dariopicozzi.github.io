@@ -94,6 +94,7 @@ const publicationsLd = {
               </p>
               <p class="venue">
                 {p.venue}
+                {p.review && <> · {p.review}</>}
                 {p.status === 'preprint' && <span class="badge">preprint</span>}
               </p>
               <p class="summary">{p.summary}</p>
