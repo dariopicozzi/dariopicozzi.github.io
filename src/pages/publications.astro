@@ -101,6 +101,13 @@ const publicationsLd = {
                 {Object.entries(p.links).map(([label, href]) => (
                   <a href={href}>{label}</a>
                 ))}
+                {p.publishedPdf && (
+                  <span class="published-pdf">
+                    <a href={p.publishedPdf.url} type="application/pdf">Published PDF</a>
+                    {' · '}
+                    <a href={p.publishedPdf.license.url} rel="license">{p.publishedPdf.license.name}</a>
+                  </span>
+                )}
               </p>
             </div>
           </li>
@@ -150,6 +157,7 @@ const publicationsLd = {
   .venue { margin: 0 0 0.5em; font-size: 0.92rem; font-style: italic; color: var(--ink-soft); }
   .summary { font-size: 0.95rem; color: var(--ink-soft); }
   .links { display: flex; flex-wrap: wrap; gap: 1.1rem; margin: 0; font-size: 0.9rem; }
+  .published-pdf { white-space: nowrap; }
   .thesis { margin-block: 3rem; padding-top: 1.6rem; border-top: 1px solid var(--line); }
   .thesis-head { font-size: 1.05rem; }
   .thesis a { margin-left: 0.5em; }

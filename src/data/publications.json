@@ -60,6 +60,11 @@
       "status": "journal",
       "arxiv": "2507.05514",
       "doi": "10.1103/q8ry-hlxt",
+      "publishedPdf": {
+        "url": "/papers/electron-molecule-scattering-r-matrix.pdf",
+        "source": "https://journals.aps.org/pra/pdf/10.1103/q8ry-hlxt",
+        "license": { "name": "CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/" }
+      },
       "links": {
         "Journal": "https://journals.aps.org/pra/abstract/10.1103/q8ry-hlxt",
         "arXiv": "https://arxiv.org/abs/2507.05514",
@@ -94,9 +99,13 @@
       "year": 2023,
       "status": "journal",
       "doi": "10.1088/2058-9565/acd86c",
+      "publishedPdf": {
+        "url": "/papers/symmetry-adapted-encodings.pdf",
+        "source": "https://discovery.ucl.ac.uk/id/eprint/10172278/1/Picozzi_2023_Quantum_Sci._Technol._8_035026.pdf",
+        "license": { "name": "CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/" }
+      },
       "links": {
         "Journal": "https://iopscience.iop.org/article/10.1088/2058-9565/acd86c",
-        "Open access PDF": "https://discovery.ucl.ac.uk/id/eprint/10172278/1/Picozzi_2023_Quantum_Sci._Technol._8_035026.pdf",
         "Code": "https://github.com/dariopicozzi/quantumsymmetry"
       },
       "summary": "Introduces symmetry-adapted encodings, which exploit a molecule's point-group and other Boolean symmetries to map its electronic structure onto fewer qubits; the paper behind QuantumSymmetry."
@@ -109,6 +118,11 @@
       "status": "journal",
       "arxiv": "2111.05176",
       "doi": "10.1016/j.physrep.2022.08.003",
+      "publishedPdf": {
+        "url": "/papers/variational-quantum-eigensolver-review.pdf",
+        "source": "https://discovery.ucl.ac.uk/id/eprint/10157639/1/1-s2.0-S0370157322003118-main.pdf",
+        "license": { "name": "CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/" }
+      },
       "links": {
         "Journal": "https://doi.org/10.1016/j.physrep.2022.08.003",
         "arXiv": "https://arxiv.org/abs/2111.05176"
