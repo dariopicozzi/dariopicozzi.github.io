@@ -8,6 +8,12 @@ interface Figure {
   width: number;
   height: number;
   scale?: number;
+  legend?: {
+    label: string;
+    description: string;
+    colours: string[];
+    ticks: string[];
+  };
 }
 
 interface Props {
@@ -22,6 +28,7 @@ interface Props {
 
 const { label, figures, artworkMaxWidth = '30rem', artworkMaxHeight = '22.5rem', artworkMobileAspectRatio = '4 / 3', artworkSpacing = false, interval = 8000 } = Astro.props;
 const rotating = figures.length > 1;
+const hasLegend = figures.some((figure) => figure.legend);
 ---
 
 <research-figures
@@ -52,6 +59,19 @@ const rotating = figures.length > 1;
         <a class="artwork" href={figure.fullSizeSrc ?? figure.src} target="_blank" rel="noopener" aria-label={`Open full-size figure: ${figure.title}`}>
           <img src={figure.src} alt={figure.alt} width={figure.width} height={figure.height} style={figure.scale ? `transform: scale(${figure.scale});` : undefined} loading="lazy" decoding="async" />
         </a>
+        {hasLegend && (
+          <div class="legend-space">
+            {figure.legend && (
+              <div class="figure-legend" role="img" aria-label={figure.legend.description}>
+                <span class="legend-label" aria-hidden="true">{figure.legend.label}</span>
+                <span class="legend-bar" style={`background: linear-gradient(to right, ${figure.legend.colours.join(', ')});`} aria-hidden="true"></span>
+                <span class="legend-ticks" style={`grid-template-columns: repeat(${figure.legend.ticks.length}, 1fr);`} aria-hidden="true">
+                  {figure.legend.ticks.map((tick) => <span>{tick}</span>)}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         <figcaption><strong>{figure.title}.</strong> <slot name="caption">{figure.caption}</slot></figcaption>
       </figure>
     ))}
@@ -66,6 +86,14 @@ const rotating = figures.length > 1;
   .artwork { display: flex; align-items: center; justify-content: center; width: min(100%, var(--figure-max-width)); margin-inline: auto; }
   .spaced-artwork .artwork { width: min(90%, var(--figure-max-width)); padding-block: 1.5rem; }
   .artwork img { display: block; width: auto; max-width: 100%; height: auto; max-height: var(--figure-max-height); object-fit: contain; }
+  /* Reserve the same legend space in both slides so captions stay aligned. */
+  .legend-space { width: min(90%, var(--figure-max-width)); min-height: 3.3rem; margin: 0.5rem auto 0; }
+  .figure-legend { width: min(12rem, 100%); margin-left: auto; color: var(--ink-soft); font-size: 0.75rem; line-height: 1.4; font-weight: 300; }
+  .legend-label { display: block; text-align: center; }
+  .legend-bar { display: block; height: 0.3rem; margin-block: 0.35rem 0.25rem; border-radius: 1px; outline: 1px solid var(--line); }
+  .legend-ticks { display: grid; text-align: center; font-variant-numeric: tabular-nums; }
+  .legend-ticks > :first-child { text-align: left; }
+  .legend-ticks > :last-child { text-align: right; }
   figcaption { margin-top: 0.9rem; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.6; }
   .controls { order: 2; display: flex; justify-content: flex-end; align-items: center; margin-top: 0.8rem; }
   .controls[hidden] { display: none; }
@@ -84,7 +112,7 @@ const rotating = figures.length > 1;
   @media (max-width: 480px) {
     /* Let artwork use the phone's width without moving the text gutters. */
     .slides { margin-inline: -0.75rem; }
-    .artwork, .spaced-artwork .artwork { width: min(100%, var(--figure-max-width)); }
+    .artwork, .spaced-artwork .artwork, .legend-space { width: min(100%, var(--figure-max-width)); }
     figcaption { margin-inline: 0.75rem; }
     .multiple[data-ready] .artwork { aspect-ratio: var(--figure-mobile-aspect-ratio); }
   }
