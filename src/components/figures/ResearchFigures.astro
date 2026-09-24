@@ -1,0 +1,177 @@
+---
+interface Figure {
+  src: string;
+  fullSizeSrc?: string;
+  alt: string;
+  title: string;
+  caption: string;
+  width: number;
+  height: number;
+  scale?: number;
+}
+
+interface Props {
+  label: string;
+  figures: Figure[];
+  artworkMaxWidth?: string;
+  artworkMaxHeight?: string;
+  artworkMobileAspectRatio?: string;
+  artworkSpacing?: boolean;
+  interval?: number;
+}
+
+const { label, figures, artworkMaxWidth = '30rem', artworkMaxHeight = '22.5rem', artworkMobileAspectRatio = '4 / 3', artworkSpacing = false, interval = 8000 } = Astro.props;
+const rotating = figures.length > 1;
+---
+
+<research-figures
+  class:list={{ 'research-figures': true, 'multiple': rotating, 'spaced-artwork': artworkSpacing }}
+  style={`--figure-max-width: ${artworkMaxWidth}; --figure-max-height: ${artworkMaxHeight}; --figure-mobile-aspect-ratio: ${artworkMobileAspectRatio};`}
+  role="group"
+  aria-label={label}
+  aria-roledescription={rotating ? 'carousel' : undefined}
+  data-interval={interval}
+>
+  {rotating && (
+    <div class="controls" hidden>
+      <div class="navigation">
+        <button type="button" data-previous aria-label="Previous figure">←</button>
+        <span class="counter" aria-hidden="true">1 / {figures.length}</span>
+        <button type="button" data-next aria-label="Next figure">→</button>
+      </div>
+    </div>
+  )}
+  <div class="slides" aria-live="off">
+    {figures.map((figure, index) => (
+      <figure
+        class="slide"
+        role={rotating ? 'group' : undefined}
+        aria-roledescription={rotating ? 'slide' : undefined}
+        aria-label={rotating ? `${index + 1} of ${figures.length}: ${figure.title}` : undefined}
+      >
+        <a class="artwork" href={figure.fullSizeSrc ?? figure.src} target="_blank" rel="noopener" aria-label={`Open full-size figure: ${figure.title}`}>
+          <img src={figure.src} alt={figure.alt} width={figure.width} height={figure.height} style={figure.scale ? `transform: scale(${figure.scale});` : undefined} loading="lazy" decoding="async" />
+        </a>
+        <figcaption><strong>{figure.title}.</strong> <slot name="caption">{figure.caption}</slot></figcaption>
+      </figure>
+    ))}
+  </div>
+</research-figures>
+
+<style>
+  .research-figures { display: flex; flex-direction: column; margin-top: 1.6rem; }
+  .slides { order: 1; }
+  .slide { margin: 0; }
+  .slide + .slide { margin-top: 1.5rem; }
+  .artwork { display: flex; align-items: center; justify-content: center; width: min(100%, var(--figure-max-width)); margin-inline: auto; }
+  .spaced-artwork .artwork { width: min(90%, var(--figure-max-width)); padding-block: 1.5rem; }
+  .artwork img { display: block; width: auto; max-width: 100%; height: auto; max-height: var(--figure-max-height); object-fit: contain; }
+  figcaption { margin-top: 0.9rem; color: var(--ink-soft); font-size: 0.92rem; line-height: 1.6; }
+  .controls { order: 2; display: flex; justify-content: flex-end; align-items: center; margin-top: 0.8rem; }
+  .controls[hidden] { display: none; }
+  .navigation { display: flex; align-items: center; gap: 0.65rem; }
+  button { min-width: 2.75rem; min-height: 2.75rem; padding: 0.4rem 0.7rem; background: transparent; border: 1px solid var(--line); border-radius: 5px; color: var(--ink-soft); font: inherit; font-size: 0.88rem; cursor: pointer; }
+  button:hover { border-color: var(--ink-faint); color: var(--ink); }
+  button:focus-visible, .artwork:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  [data-previous], [data-next] { font-size: 1.1rem; }
+  .counter { font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+  .multiple[data-ready] .slides { display: grid; }
+  .multiple[data-ready] .slide { grid-area: 1 / 1; margin: 0; }
+  .multiple[data-ready] .slide[aria-hidden="true"] { visibility: hidden; pointer-events: none; }
+  .multiple[data-ready] .artwork { aspect-ratio: 4 / 3; }
+  .multiple[data-ready] .artwork img { width: 100%; height: 100%; object-fit: contain; }
+
+  @media (max-width: 480px) {
+    /* Let artwork use the phone's width without moving the text gutters. */
+    .slides { margin-inline: -0.75rem; }
+    .artwork, .spaced-artwork .artwork { width: min(100%, var(--figure-max-width)); }
+    figcaption { margin-inline: 0.75rem; }
+    .multiple[data-ready] .artwork { aspect-ratio: var(--figure-mobile-aspect-ratio); }
+  }
+</style>
+
+<script>
+  class ResearchFigures extends HTMLElement {
+    private cleanup?: () => void;
+
+    connectedCallback() {
+      const slides = [...this.querySelectorAll<HTMLElement>('.slide')];
+      if (slides.length < 2 || this.cleanup) return;
+
+      const container = this.querySelector<HTMLElement>('.slides')!;
+      const controls = this.querySelector<HTMLElement>('.controls')!;
+      const counter = this.querySelector<HTMLElement>('.counter')!;
+      const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const events = new AbortController();
+      const options = { signal: events.signal };
+      const delay = Number(this.dataset.interval) || 8000;
+      let index = 0;
+      let keyboardFocus = this.querySelector(':focus-visible') !== null;
+      let hovering = this.matches(':hover');
+      let visible = false;
+      let timer: ReturnType<typeof setTimeout> | undefined;
+
+      const show = (next: number) => {
+        index = (next + slides.length) % slides.length;
+        slides.forEach((slide, i) => {
+          slide.setAttribute('aria-hidden', String(i !== index));
+          slide.inert = i !== index;
+        });
+        counter.textContent = `${index + 1} / ${slides.length}`;
+      };
+
+      const schedule = () => {
+        clearTimeout(timer);
+        const running = !motion.matches && !keyboardFocus && !hovering && visible && !document.hidden;
+        container.setAttribute('aria-live', running ? 'off' : 'polite');
+        if (running) timer = setTimeout(() => { show(index + 1); schedule(); }, delay);
+      };
+
+      const step = (direction: number) => {
+        const focusArtwork = slides[index].contains(document.activeElement);
+        show(index + direction);
+        if (focusArtwork) slides[index].querySelector<HTMLAnchorElement>('.artwork')?.focus({ preventScroll: true });
+        schedule();
+      };
+      this.querySelector('[data-previous]')!.addEventListener('click', () => step(-1), options);
+      this.querySelector('[data-next]')!.addEventListener('click', () => step(1), options);
+      this.addEventListener('pointerenter', (event) => {
+        if ((event as PointerEvent).pointerType === 'mouse') { hovering = true; schedule(); }
+      }, options);
+      this.addEventListener('pointerleave', () => { hovering = false; schedule(); }, options);
+      this.addEventListener('focusin', (event) => {
+        keyboardFocus = event.target instanceof HTMLElement && event.target.matches(':focus-visible');
+        schedule();
+      }, options);
+      this.addEventListener('focusout', (event) => {
+        if (!(event.relatedTarget instanceof Node) || !this.contains(event.relatedTarget)) {
+          keyboardFocus = false;
+          schedule();
+        }
+      }, options);
+      this.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+          event.preventDefault();
+          step(event.key === 'ArrowRight' ? 1 : -1);
+        }
+      }, options);
+      document.addEventListener('visibilitychange', schedule, options);
+      motion.addEventListener('change', schedule, options);
+      const observer = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting && entry.intersectionRatio >= 0.35;
+        schedule();
+      }, { threshold: 0.35 });
+      observer.observe(this);
+
+      show(0);
+      this.dataset.ready = '';
+      controls.hidden = false;
+      schedule();
+      this.cleanup = () => { clearTimeout(timer); observer.disconnect(); events.abort(); };
+    }
+
+    disconnectedCallback() { this.cleanup?.(); this.cleanup = undefined; }
+  }
+
+  if (!customElements.get('research-figures')) customElements.define('research-figures', ResearchFigures);
+</script>

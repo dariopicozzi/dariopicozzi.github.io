@@ -4,12 +4,12 @@ import Base from '../layouts/Base.astro';
 
 <Base
   title="Software · Dario Picozzi"
-  description="Open-source software by Dario Picozzi, including QuantumSymmetry, a Python package for symmetry-adapted qubit encodings in quantum computing."
+  description="Open-source research software by Dario Picozzi: QuantumSymmetry and the interactive companion to the information geometry of large language models."
 >
   <article class="measure">
     <header class="page-head">
       <h1>Software</h1>
-      <p class="lede">Open-source code accompanying the research.</p>
+      <p class="lede">Open-source code and interactive companions to the research.</p>
     </header>
 
     <section class="project">
@@ -49,6 +49,39 @@ import Base from '../layouts/Base.astro';
         </p>
       </details>
     </section>
+
+    <section class="project" aria-labelledby="llm-geometry">
+      <h2 class="project-title" id="llm-geometry">Information geometry of LLMs</h2>
+      <p>
+        Research code and an interactive companion for studying the geometry of
+        language-model behaviour. The accompanying paper shows that the Fisher–Rao
+        geometry of next-token probabilities captures structure shared across model
+        architectures and shaped by training data. This geometry guides targeted
+        changes to model behaviour while limiting disturbance to other predictions,
+        with applications to steering, editing, attribution, dictionary learning and
+        fine-tuning.
+      </p>
+      <p>
+        Explore the findings through guided explanations and interactive figures,
+        from the structure different models share to how it is learned and used to
+        control their behaviour. Each study page links to downloadable experiment
+        packages with code, inputs and instructions for reproducing the experiments.
+      </p>
+      <p class="links">
+        <a href="https://llm-geometry.dariopicozzi.com/">Interactive companion</a>
+        <a href="https://github.com/dariopicozzi/llm-geometry">GitHub</a>
+        <a href="https://arxiv.org/abs/2609.11063">Paper</a>
+      </p>
+      <details class="cite">
+        <summary>How to cite</summary>
+        <p>
+          D. Picozzi,
+          <em>The information geometry of large language models is shared, learned,
+          and controllable</em> (2026).
+          <a href="https://arxiv.org/abs/2609.11063">arXiv:2609.11063</a>
+        </p>
+      </details>
+    </section>
   </article>
 </Base>
 
@@ -56,6 +89,7 @@ import Base from '../layouts/Base.astro';
   .page-head { margin-block: 3.2rem 2.6rem; }
   .lede { color: var(--ink-soft); }
   .project { margin-block: 2.8rem; padding-top: 1.8rem; border-top: 1px solid var(--line); }
+  .project-title { margin: 0 0 1.4rem; }
   .logo {
     display: block;
     max-width: min(300px, 70vw);
@@ -64,7 +98,7 @@ import Base from '../layouts/Base.astro';
   }
   .install { margin: -0.3em 0 1em; }
   .install code { font-size: 0.95rem; padding: 0.3em 0.7em; }
-  .links { display: flex; gap: 1.2rem; font-weight: 450; }
+  .links { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; font-weight: 450; }
   .cite { margin-top: 1rem; font-size: 0.92rem; color: var(--ink-soft); }
   .cite summary { cursor: pointer; color: var(--ink-faint); }
   .cite p { margin-top: 0.6em; }

@@ -27,12 +27,13 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# Research page — held back until the preprint is published.
-# To re-include: delete this block, restore the Nav 'Research' link,
-# and rename src/pages/_research.astro -> research.astro
-src/pages/_research.astro
-src/components/figures/MinimalCircuitFigure.astro
+# Legacy composite artwork, superseded by the individual research figures.
 public/minimal-circuit-dark.png
+
+# Local rendering scratch files and Python bytecode.
+tmp/
+__pycache__/
+*.pyc
 
 # Markdown files are local-only.
 *.md

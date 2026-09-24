@@ -1,0 +1,162 @@
+---
+import Base from '../layouts/Base.astro';
+import MinimalCircuitFigure from '../components/figures/MinimalCircuitFigure.astro';
+import ResearchFigures from '../components/figures/ResearchFigures.astro';
+
+const llmFigures = [{
+  src: '/research/llm-geometry-figure-1.png',
+  width: 1776,
+  height: 1440,
+  alt: 'A language model connects hidden activations to next-token probabilities. Cyan Fisher–Rao and indigo Euclidean steering trajectories are shown in activation space and prediction geometry.',
+  title: 'From activations to predictions',
+  caption: 'The same steering trajectories are shown in a model’s activation space and in the geometry of its next-token predictions. Euclidean updates use distances in activation coordinates; Fisher–Rao updates measure change through its effect on the output distribution.',
+}];
+
+const gravityFigures = [{
+  src: '/research/gauge-gravity-duality.svg',
+  width: 640,
+  height: 480,
+  alt: 'A cyan wireframe black-hole horizon inside an indigo-accented quantum-field-theory boundary. Black-hole entropy is k B c cubed A H divided by four G N h bar. Thermal entropy is minus k B times the trace of rho beta log rho beta. The two entropies agree at leading semiclassical order.',
+  title: 'Two descriptions of one system',
+  caption: 'A large AdS black hole has a dual description as a thermal state of the boundary quantum field theory. This is a schematic spatial view: time and dimensions are suppressed, and the conformal boundary at infinity is drawn at finite size.',
+}];
+
+const simulationFigures = [{
+  src: '/research/tanuki-truss-mesh-display.webp',
+  fullSizeSrc: '/research/tanuki-truss-mesh.png',
+  width: 1152,
+  height: 708,
+  alt: 'The original Warren-truss CAD surface shown as a white triangular mesh on a transparent background.',
+  title: 'The structural mesh',
+  caption: 'The triangular surface mesh of the original Warren-truss CAD model.',
+}, {
+  src: '/research/tanuki-truss-display.webp',
+  fullSizeSrc: '/research/tanuki-truss.png',
+  width: 1152,
+  height: 708,
+  alt: 'An oblique view of a steel Warren truss coloured from purple to yellow by increasing von Mises stress under its own weight.',
+  title: 'The stress field',
+  caption: 'A steel Warren truss under its own weight. The saved von Mises stress field is interpolated onto the original CAD surface, with purple to yellow indicating increasing stress. The display range is capped at 1.10 MPa.',
+}];
+---
+
+<Base
+  title="Research · Dario Picozzi"
+  description="Research by Dario Picozzi on quantum algorithms and circuits, the information geometry of machine learning, quantum gravity and foundational physics, and computational simulation."
+>
+  <article class="measure">
+    <header class="page-head">
+      <h1>Research</h1>
+    </header>
+
+    <div class="research-areas">
+      <section class="research-area" id="quantum-computing">
+        <h2>Quantum algorithms and quantum circuits</h2>
+        <p>
+          I work on quantum algorithms for simulating molecules and materials on near-term
+          quantum computers. <a href="https://iopscience.iop.org/article/10.1088/2058-9565/acd86c">Symmetry-adapted
+          encodings</a> build a molecule's symmetries into its qubit mapping, compressing
+          electronic structure onto fewer qubits, and now extend
+          to <a href="https://arxiv.org/abs/2606.05865">complete active spaces and the Bravyi–Kitaev
+          mapping</a> and, via space groups, to <a href="https://arxiv.org/abs/2606.05777">crystalline
+          solids</a>; they are implemented in the open-source package <a href="/software/">QuantumSymmetry</a>.
+          I also work on a quantum formulation of the <a href="https://arxiv.org/abs/2507.05514">R-matrix
+          method for electron–molecule scattering</a>.
+          My <a href="https://arxiv.org/abs/2607.07942">hardware-efficient ansatz</a> represents quantum
+          states as a binary tree, pruning redundant gates to keep circuits compact. Its exact,
+          diagonal geometric metric enables natural-gradient optimisation and variational real- and
+          imaginary-time evolution without extra metric measurements or matrix inversion.
+        </p>
+        <MinimalCircuitFigure />
+      </section>
+
+      <section class="research-area" id="ai">
+        <h2>Information geometry of machine learning</h2>
+        <p>
+          I work on large language models through the geometry of their probability distributions.
+          A model's output distribution carries a natural geometry, the Fisher–Rao metric, and
+          two questions drive the work: how much of that geometry is shared between models
+          trained separately, and how it can be used to steer or edit a model's behaviour with
+          minimal collateral change. The same picture serves as a lens for interpretability,
+          reading a model's learned features as directions in the space of its predictions.
+          The <a href="https://arxiv.org/abs/2609.11063">paper</a> and its
+          <a href="https://llm-geometry.dariopicozzi.com/">interactive companion</a> present
+          the findings and accompanying experiments.
+        </p>
+        <ResearchFigures
+          label="Information geometry of language models"
+          figures={llmFigures}
+          artworkMaxWidth="32rem"
+          artworkMaxHeight="26rem"
+        />
+      </section>
+
+      <section class="research-area" id="theory">
+        <h2>Quantum gravity and foundational physics</h2>
+        <p>
+          I work on quantum gravity through holography and quantum information, asking how the
+          structure of a quantum theory can encode spacetime and gravitational physics. My
+          interests include entanglement and the relationship between quantum information and
+          geometry, as well as foundational and philosophical questions in quantum mechanics.
+          This work grew out of my MSc thesis on quantum-informational approaches to gravity
+          and the gauge/gravity duality.
+        </p>
+        <ResearchFigures
+          label="Gauge/gravity duality"
+          figures={gravityFigures}
+          artworkMaxWidth="26rem"
+        >
+          <Fragment slot="caption">
+            A large AdS black hole and a thermal boundary state have the same entropy at leading
+            semiclassical order in Einstein gravity. Here{' '}
+            <span class="math-phrase"><math aria-label="rho beta equals e to the power minus beta H divided by Z">
+              <msub><mi>ρ</mi><mi>β</mi></msub><mo>=</mo>
+              <msup><mi>e</mi><mrow><mo>−</mo><mi>β</mi><mi>H</mi></mrow></msup><mo>/</mo><mi>Z</mi>
+            </math>,</span>{' '}
+            with <span class="math-phrase"><math aria-label="beta equals one over Boltzmann's constant times temperature"><mi>β</mi><mo>=</mo><mn>1</mn><mo>/</mo><mrow><mo>(</mo><msub><mi>k</mi><mi mathvariant="normal">B</mi></msub><mi>T</mi><mo>)</mo></mrow></math>.</span>{' '}
+            The spatial cutaway suppresses time and dimensions; the conformal boundary at infinity is drawn at finite size.
+          </Fragment>
+        </ResearchFigures>
+      </section>
+
+      <section class="research-area" id="simulation">
+        <h2>Computational simulations for science and engineering</h2>
+        <p>
+          Alongside my academic research, I am co-founder and managing director
+          of <a href="https://tanuki.ai">Tanuki</a>, which builds AI-assisted computational
+          simulation for science and engineering, shortening the path from a physical problem to
+          a solved, trustworthy model. Through Tanuki we contribute computational simulation
+          to <a href="https://aria.org.uk/opportunity-spaces/future-proofing-our-climate-and-weather/exploring-climate-cooling/re-thickening-arctic-sea-ice/">Re-thickening
+          Arctic Sea Ice (RASI)</a>, a University of Cambridge-led programme funded by ARIA
+          investigating whether Arctic sea ice can be artificially thickened during the polar
+          winter so it survives longer into summer; our contribution models the mechanics of the
+          ice, how thickened sea ice deforms and fractures under stress. This work has been
+          covered by <a href="https://www.theguardian.com/environment/2026/jun/16/arctic-sea-ice-rethickening-climate-geoengineering">the
+          Guardian</a> and <a href="https://www.bbc.co.uk/news/science-environment-68206309">the BBC</a>.
+        </p>
+        <ResearchFigures
+          label="Structural simulation with Tanuki"
+          figures={simulationFigures}
+          artworkMaxWidth="24rem"
+          artworkSpacing
+        />
+      </section>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .page-head { margin-block: 3.2rem 2.6rem; }
+  .research-area {
+    margin-block: 2.8rem;
+    padding-top: 1.8rem;
+    border-top: 1px solid var(--line);
+    scroll-margin-top: 5rem;
+  }
+  .research-area h2 { margin: 0 0 1.4rem; }
+  .research-area:first-child { border-top: 0; padding-top: 0; }
+  .math-phrase { white-space: nowrap; }
+  @media (max-width: 860px) {
+    .research-area { scroll-margin-top: 8.5rem; }
+  }
+</style>

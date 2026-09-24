@@ -1,0 +1,40 @@
+---
+import ResearchFigures from './ResearchFigures.astro';
+
+// Original vector panels from the paper's linkedin_announcement.pdf artwork.
+// Explanatory text is kept in HTML; scientific labels remain in each figure.
+const figures = [
+  {
+    src: '/research/quantum-geometry.svg',
+    width: 212,
+    height: 211,
+    scale: 0.9,
+    alt: 'An energy landscape and Bloch sphere showing natural-gradient and real-time quantum-state evolution.',
+    title: 'The geometry',
+    caption: 'A diagonal Fubini–Study metric turns energy gradients into real- and imaginary-time evolution.',
+  },
+  {
+    src: '/research/quantum-parametrization.svg',
+    width: 218,
+    height: 200,
+    scale: 0.9,
+    alt: 'A binary tree of controlled rotations with active, fixed and inactive nodes leading to computational-basis states.',
+    title: 'The parametrization',
+    caption: 'A binary tree of controlled rotations; nodes are active, fixed, or inactive (gauge).',
+  },
+  {
+    src: '/research/quantum-circuit.svg',
+    width: 454,
+    height: 83,
+    alt: 'A four-qubit circuit with redundant gates pruned and cancelling CNOT pairs marked in orange.',
+    title: 'The circuit',
+    caption: 'Gauge-fixing prunes redundant gates and cancels CNOT pairs, so the two-qubit count grows linearly in the number of active basis states k.',
+  },
+];
+---
+
+<ResearchFigures
+  label="A hardware-efficient variational ansatz"
+  figures={figures}
+  artworkMobileAspectRatio="1 / 1"
+/>
