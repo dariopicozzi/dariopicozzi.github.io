@@ -60,15 +60,6 @@ const awards = [
     </header>
 
     <section>
-      <h2>Teaching and supervision</h2>
-      <p>
-        I have supervised MSc research projects in quantum technologies and taught across the
-        core physics curriculum at UCL, spanning mathematical methods, computational physics,
-        and molecular physics.
-      </p>
-    </section>
-
-    <section>
       <h2>Fellowships and awards</h2>
       <ul class="entries">
         {
@@ -83,6 +74,42 @@ const awards = [
             </li>
           ))
         }
+      </ul>
+    </section>
+
+    <section>
+      <h2>Teaching and supervision</h2>
+      <p>
+        I have supervised graduate students, including serving as principal supervisor
+        for an MSc research project in quantum technologies.
+      </p>
+      <p>I have taught across the core physics curriculum at UCL, including:</p>
+      <ul class="modules" role="list">
+        <li>
+          <a class="module-title" href="https://www.ucl.ac.uk/module-catalogue/modules/PHAS0002" title="Current UCL syllabus">Mathematical Methods I</a>
+          <span class="module-code">PHAS0002</span>
+          <span class="module-topics">Complex numbers, vector algebra, calculus and series.</span>
+        </li>
+        <li>
+          <a class="module-title" href="https://www.ucl.ac.uk/module-catalogue/modules/PHAS0009" title="Current UCL syllabus">Mathematical Methods II</a>
+          <span class="module-code">PHAS0009</span>
+          <span class="module-topics">Differential equations, vector calculus, multiple integrals and linear algebra.</span>
+        </li>
+        <li>
+          <a class="module-title" href="https://www.ucl.ac.uk/module-catalogue/modules/PHAS0025" title="Current UCL syllabus">Mathematical Methods III</a>
+          <span class="module-code">PHAS0025</span>
+          <span class="module-topics">Fourier analysis, partial differential equations, Lagrangian and Hamiltonian mechanics, and special relativity.</span>
+        </li>
+        <li>
+          <a class="module-title" href="https://www.ucl.ac.uk/module-catalogue/modules/PHAS0029" title="Current UCL syllabus">Practical Physics and Computing II</a>
+          <span class="module-code">PHAS0029</span>
+          <span class="module-topics">Python programming, numerical methods, data analysis and computational physics.</span>
+        </li>
+        <li>
+          <a class="module-title" href="https://www.ucl.ac.uk/module-catalogue/modules/PHAS0099" title="Current UCL syllabus">Molecular Physics</a>
+          <span class="module-code">PHAS0099</span>
+          <span class="module-topics">Electronic structure, molecular orbitals, rotational and vibrational spectra.</span>
+        </li>
       </ul>
     </section>
 
@@ -116,6 +143,63 @@ const awards = [
     border-bottom: 1px solid var(--line);
   }
   section p { color: var(--ink-soft); }
+  .modules {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+  }
+  .modules li {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 0.25rem 1.2rem;
+    padding: 0 0 1.25rem 1.65rem;
+  }
+  .modules li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.65rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+  .modules li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: calc(0.25rem - 0.5px);
+    top: 1.15rem;
+    bottom: -0.65rem;
+    width: 1px;
+    background: var(--ink);
+    opacity: 0.18;
+  }
+  .modules li:last-child { padding-bottom: 0; }
+  .modules .module-title {
+    color: var(--ink);
+    font-weight: 350;
+    justify-self: start;
+    text-decoration: none;
+  }
+  .module-title:focus-visible {
+    outline: 1px solid var(--ink);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+  .module-code {
+    color: var(--ink-faint);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .module-topics {
+    grid-column: 1 / -1;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
   .entries { list-style: none; margin: 0; padding: 0; }
   .entries li {
     display: grid;
@@ -135,6 +219,7 @@ const awards = [
   .place { color: var(--ink-soft); font-size: 0.95rem; }
   .detail { color: var(--ink-faint); font-size: 0.9rem; }
   @media (max-width: 560px) {
+    .modules li { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
     .entries li { grid-template-columns: 1fr; gap: 0.25rem; }
   }
 </style>
