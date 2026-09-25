@@ -25,8 +25,13 @@ const gravityFigures = [{
 // Samples of the original Viridis lookup table at 10% intervals.
 const stressColours = ['#440154', '#482475', '#414487', '#355f8d', '#2a788e', '#21918c', '#22a884', '#44bf70', '#7ad151', '#bddf26', '#fde725'];
 
+// Match the sea-ice artwork's 0.85 layout scale, page gutters and 32rem cap.
+const seaIceSizes = '(max-width: 480px) calc(85vw - 0.85rem), min(calc(76.5vw - 1.9125rem), 27.2rem)';
+
 const simulationFigures = [{
-  src: '/research/nares-fractures-48h.svg#map',
+  src: '/research/nares-fractures-display-960.webp',
+  srcSet: '/research/nares-fractures-display-640.webp 640w, /research/nares-fractures-display-960.webp 960w, /research/nares-fractures-display-1280.webp 1280w',
+  sizes: seaIceSizes,
   fullSizeSrc: '/research/nares-fractures-48h.svg',
   width: 1040,
   height: 840,
@@ -36,9 +41,11 @@ const simulationFigures = [{
   naturalAspect: true,
   alt: 'A white triangular mesh of simulated sea ice in Nares Strait, with fractures across the southern ice pack and a thicker white coastline. Deformation is shown at its actual scale.',
   title: 'Sea-ice deformation and fracture',
-  caption: 'A Tanuki finite–discrete element simulation of sea ice in Nares Strait, showing the deformed mesh and fractures at their actual scale. The thicker white outline marks the coastline.',
+  caption: 'A Tanuki finite–discrete element simulation of sea ice in Nares Strait, showing the deformed mesh and fractures at their actual scale.',
 }, {
-  src: '/research/nares-stress-48h.svg#map',
+  src: '/research/nares-stress-display-960.webp',
+  srcSet: '/research/nares-stress-display-640.webp 640w, /research/nares-stress-display-960.webp 960w, /research/nares-stress-display-1280.webp 1280w',
+  sizes: seaIceSizes,
   fullSizeSrc: '/research/nares-stress-48h.svg',
   width: 1040,
   height: 840,
@@ -47,7 +54,7 @@ const simulationFigures = [{
   naturalAspect: true,
   alt: 'The same fractured sea-ice geometry coloured from purple through green to yellow by von Mises stress, with a thicker white coastline. The colour scale runs from zero to 60-plus kilopascals.',
   title: 'Stress in fractured sea ice',
-  caption: 'Von Mises stress in the same Tanuki simulation frame, showing stress concentrations within the ice pack. Colours indicate cell-mean stress in kilopascals.',
+  caption: 'Von Mises stress in the same Tanuki simulation frame, showing stress concentrations within the ice pack.',
   legend: {
     label: 'von Mises stress (kPa)',
     description: 'Linear von Mises stress scale in kilopascals: purple at zero, green near 30, and yellow at 60 and above.',
@@ -70,7 +77,7 @@ const simulationFigures = [{
   height: 708,
   alt: 'An oblique view of a steel Warren truss coloured from purple to yellow by increasing von Mises stress under its own weight.',
   title: 'The stress field',
-  caption: 'A Tanuki structural-engineering simulation of a steel Warren truss under its own weight. Von Mises stress is interpolated onto the CAD surface.',
+  caption: 'A Tanuki structural-engineering simulation of a steel Warren truss under its own weight.',
   legend: {
     label: 'von Mises stress (MPa)',
     description: 'Linear von Mises stress scale in megapascals: purple at zero, green near 0.55, and yellow at 1.10 and above.',

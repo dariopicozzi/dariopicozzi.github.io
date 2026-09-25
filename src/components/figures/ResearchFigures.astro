@@ -1,6 +1,8 @@
 ---
 interface Figure {
   src: string;
+  srcSet?: string;
+  sizes?: string;
   fullSizeSrc?: string;
   alt: string;
   title: string;
@@ -82,7 +84,7 @@ const outlineFilterId = figures.some((figure) => figure.outline)
         aria-label={rotating ? `${index + 1} of ${figures.length}: ${figure.title}` : undefined}
       >
         <a class:list={{ artwork: true, 'natural-aspect': figure.naturalAspect }} href={figure.fullSizeSrc ?? figure.src} target="_blank" rel="noopener" aria-label={`Open full-size figure: ${figure.title}`}>
-          <img class:list={{ 'outlined-artwork': figure.outline }} src={figure.src} alt={figure.alt} width={figure.width} height={figure.height} style={figure.scale ? `transform: scale(${figure.scale});` : undefined} loading="lazy" decoding="async" />
+          <img class:list={{ 'outlined-artwork': figure.outline }} src={figure.src} srcset={figure.srcSet} sizes={figure.sizes} alt={figure.alt} width={figure.width} height={figure.height} style={figure.scale ? `transform: scale(${figure.scale});` : undefined} loading="lazy" decoding="async" />
         </a>
         {figure.legend && (
           <div class="legend-space">
