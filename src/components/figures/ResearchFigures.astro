@@ -3,7 +3,6 @@ interface Figure {
   src: string;
   srcSet?: string;
   sizes?: string;
-  fullSizeSrc?: string;
   alt: string;
   title: string;
   caption: string;
@@ -83,9 +82,9 @@ const outlineFilterId = figures.some((figure) => figure.outline)
         aria-roledescription={rotating ? 'slide' : undefined}
         aria-label={rotating ? `${index + 1} of ${figures.length}: ${figure.title}` : undefined}
       >
-        <a class:list={{ artwork: true, 'natural-aspect': figure.naturalAspect }} href={figure.fullSizeSrc ?? figure.src} target="_blank" rel="noopener" aria-label={`Open full-size figure: ${figure.title}`}>
+        <div class:list={{ artwork: true, 'natural-aspect': figure.naturalAspect }}>
           <img class:list={{ 'outlined-artwork': figure.outline }} src={figure.src} srcset={figure.srcSet} sizes={figure.sizes} alt={figure.alt} width={figure.width} height={figure.height} style={figure.scale ? `transform: scale(${figure.scale});` : undefined} loading="lazy" decoding="async" />
-        </a>
+        </div>
         {figure.legend && (
           <div class="legend-space">
               <div class="figure-legend" role="img" aria-label={figure.legend.description}>
@@ -127,7 +126,7 @@ const outlineFilterId = figures.some((figure) => figure.outline)
   .navigation { display: flex; align-items: center; gap: 0.65rem; }
   button { min-width: 2.75rem; min-height: 2.75rem; padding: 0.4rem 0.7rem; background: transparent; border: 1px solid var(--line); border-radius: 5px; color: var(--ink-soft); font: inherit; font-size: 0.88rem; cursor: pointer; }
   button:hover { border-color: var(--ink-faint); color: var(--ink); }
-  button:focus-visible, .artwork:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   [data-previous], [data-next] { font-size: 1.1rem; }
   .counter { font-size: 0.82rem; font-variant-numeric: tabular-nums; }
   .multiple[data-ready] .slides { display: grid; }
@@ -186,9 +185,7 @@ const outlineFilterId = figures.some((figure) => figure.outline)
       };
 
       const step = (direction: number) => {
-        const focusArtwork = slides[index].contains(document.activeElement);
         show(index + direction);
-        if (focusArtwork) slides[index].querySelector<HTMLAnchorElement>('.artwork')?.focus({ preventScroll: true });
         schedule();
       };
       this.querySelector('[data-previous]')!.addEventListener('click', () => step(-1), options);
