@@ -7,6 +7,7 @@ const llmFigures = [{
   src: '/research/llm-geometry-figure-1.png',
   width: 1776,
   height: 1440,
+  artworkExtraSpacing: '0.5rem',
   alt: 'A language model connects hidden activations to next-token probabilities. Cyan Fisher–Rao and indigo Euclidean steering trajectories are shown in activation space and prediction geometry.',
   title: 'From activations to predictions',
   caption: 'The same steering trajectories are shown in a model’s activation space and in the geometry of its next-token predictions. Euclidean updates use distances in activation coordinates; Fisher–Rao updates measure change through its effect on the output distribution.',
@@ -15,13 +16,45 @@ const llmFigures = [{
 const gravityFigures = [{
   src: '/research/gauge-gravity-duality.svg',
   width: 640,
-  height: 480,
-  alt: 'A cyan wireframe black-hole horizon inside an indigo-accented quantum-field-theory boundary. Black-hole entropy is k B c cubed A H divided by four G N h bar. Thermal entropy is minus k B times the trace of rho beta log rho beta. The two entropies agree at leading semiclassical order.',
+  height: 576,
+  alt: 'A cyan wireframe black-hole horizon inside an indigo-accented quantum-field-theory boundary. Above the drawing, black-hole entropy is k B c cubed A H divided by four G N h bar, and thermal entropy is minus k B times the trace of rho beta log rho beta. The two entropies agree at leading semiclassical order. Below, a schematic radial guide marks zero, the horizon radius r h, and infinity at the boundary. The black-hole interior is not depicted.',
   title: 'Two descriptions of one system',
   caption: 'A large AdS black hole has a dual description as a thermal state of the boundary quantum field theory. This is a schematic spatial view: time and dimensions are suppressed, and the conformal boundary at infinity is drawn at finite size.',
 }];
 
+// Samples of the original Viridis lookup table at 10% intervals.
+const stressColours = ['#440154', '#482475', '#414487', '#355f8d', '#2a788e', '#21918c', '#22a884', '#44bf70', '#7ad151', '#bddf26', '#fde725'];
+
 const simulationFigures = [{
+  src: '/research/nares-fractures-48h.svg#map',
+  fullSizeSrc: '/research/nares-fractures-48h.svg',
+  width: 1040,
+  height: 840,
+  artworkMaxWidth: '32rem',
+  artworkLayoutScale: 0.85,
+  artworkExtraSpacing: '0.5rem',
+  naturalAspect: true,
+  alt: 'A white triangular mesh of simulated sea ice in Nares Strait, with fractures across the southern ice pack and a thicker white coastline. Deformation is shown at its actual scale.',
+  title: 'Sea-ice deformation and fracture',
+  caption: 'A Tanuki finite–discrete element simulation of sea ice in Nares Strait, showing the deformed mesh and fractures at their actual scale. The thicker white outline marks the coastline.',
+}, {
+  src: '/research/nares-stress-48h.svg#map',
+  fullSizeSrc: '/research/nares-stress-48h.svg',
+  width: 1040,
+  height: 840,
+  artworkMaxWidth: '32rem',
+  artworkLayoutScale: 0.85,
+  naturalAspect: true,
+  alt: 'The same fractured sea-ice geometry coloured from purple through green to yellow by von Mises stress, with a thicker white coastline. The colour scale runs from zero to 60-plus kilopascals.',
+  title: 'Stress in fractured sea ice',
+  caption: 'Von Mises stress in the same Tanuki simulation frame, showing stress concentrations within the ice pack. Colours indicate cell-mean stress in kilopascals.',
+  legend: {
+    label: 'von Mises stress (kPa)',
+    description: 'Linear von Mises stress scale in kilopascals: purple at zero, green near 30, and yellow at 60 and above.',
+    colours: stressColours,
+    ticks: ['0', '30', '60+'],
+  },
+}, {
   src: '/research/tanuki-truss-mesh-display.webp',
   fullSizeSrc: '/research/tanuki-truss-mesh.png',
   width: 1152,
@@ -32,6 +65,7 @@ const simulationFigures = [{
 }, {
   src: '/research/tanuki-truss-display.webp',
   fullSizeSrc: '/research/tanuki-truss.png',
+  outline: true,
   width: 1152,
   height: 708,
   alt: 'An oblique view of a steel Warren truss coloured from purple to yellow by increasing von Mises stress under its own weight.',
@@ -40,8 +74,7 @@ const simulationFigures = [{
   legend: {
     label: 'von Mises stress (MPa)',
     description: 'Linear von Mises stress scale in megapascals: purple at zero, green near 0.55, and yellow at 1.10 and above.',
-    // Samples of the original Viridis lookup table at 10% intervals.
-    colours: ['#440154', '#482475', '#414487', '#355f8d', '#2a788e', '#21918c', '#22a884', '#44bf70', '#7ad151', '#bddf26', '#fde725'],
+    colours: stressColours,
     ticks: ['0', '0.55', '1.10'],
   },
 }];
@@ -71,7 +104,7 @@ const simulationFigures = [{
           method for electron–molecule scattering</a>.
         </p>
         <p>
-          My <a href="https://arxiv.org/abs/2607.07942">hardware-efficient ansatz</a> represents quantum
+          I developed a <a href="https://arxiv.org/abs/2607.07942">hardware-efficient ansatz</a> that represents quantum
           states as a binary tree, pruning redundant gates to keep circuits compact. Its exact,
           diagonal geometric metric enables natural-gradient optimisation and variational real- and
           imaginary-time evolution without extra metric measurements or matrix inversion.
@@ -91,7 +124,7 @@ const simulationFigures = [{
         <p>
           The same picture serves as a lens for interpretability,
           reading a model's learned features as directions in the space of its predictions.
-          The <a href="https://arxiv.org/abs/2609.11063">paper</a> and its
+          The <a href="https://arxiv.org/abs/2609.11063">paper</a> and its{' '}
           <a href="https://llm-geometry.dariopicozzi.com/">interactive companion</a> present
           the findings and accompanying experiments.
         </p>
@@ -117,6 +150,7 @@ const simulationFigures = [{
           label="Gauge/gravity duality"
           figures={gravityFigures}
           artworkMaxWidth="26rem"
+          artworkMaxHeight="24rem"
         >
           <Fragment slot="caption">
             A large AdS black hole and a thermal boundary state have the same entropy at leading
@@ -150,7 +184,7 @@ const simulationFigures = [{
           Guardian</a> and <a href="https://www.bbc.co.uk/news/science-environment-68206309">the BBC</a>.
         </p>
         <ResearchFigures
-          label="Structural simulation with Tanuki"
+          label="Computational simulation with Tanuki"
           figures={simulationFigures}
           artworkMaxWidth="24rem"
           artworkSpacing
