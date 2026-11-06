@@ -1,6 +1,17 @@
 {
   "papers": [
     {
+      "title": "Fidelity determines the minimum error of quantum recovery",
+      "authors": ["Dario Picozzi"],
+      "venue": "arXiv",
+      "review": "Under consideration at Physical Review Letters",
+      "year": 2026,
+      "status": "preprint",
+      "arxiv": "2611.07344",
+      "links": { "arXiv": "https://arxiv.org/abs/2611.07344" },
+      "summary": "Shows that, for any finite-dimensional noise channel and fixed encoding, optimising quantum recovery gives the same minimum for worst-case measurement error and worst-input entanglement infidelity. A final unitary correction turns a fidelity-optimal recovery into an error-optimal one."
+    },
+    {
       "title": "The information geometry of large language models is shared, learned, and controllable",
       "authors": ["Dario Picozzi"],
       "venue": "arXiv",
@@ -14,12 +25,12 @@
       "title": "A hardware-efficient variational ansatz with an exact diagonal metric for real- and imaginary-time evolution and Haar sampling",
       "authors": ["Dario Picozzi"],
       "venue": "arXiv",
-      "review": "Under review at PRX Quantum",
+      "review": "Submitted to Quantum",
       "year": 2026,
       "status": "preprint",
       "arxiv": "2607.07942",
       "links": { "arXiv": "https://arxiv.org/abs/2607.07942" },
-      "summary": "An n-qubit ansatz whose quantum geometric (Fubini–Study) metric is diagonal in closed form, so natural-gradient optimisation and variational time evolution need no costly metric measurements. Implemented in the QuantumSymmetry package."
+      "summary": "An n-qubit ansatz whose Hilbert-space pullback metric is diagonal in closed form, so natural-gradient optimisation and variational time evolution need no costly metric measurements. Implemented in the QuantumSymmetry package."
     },
     {
       "title": "Comment on 'On computing quantum waves exactly from classical action'",
@@ -34,7 +45,7 @@
       "title": "Symmetry-adapted qubit encoding with complete active space and Bravyi–Kitaev mapping for quantum chemistry on a quantum computer",
       "authors": ["Dario Picozzi", "Jonathan Tennyson"],
       "venue": "arXiv",
-      "review": "Under review at Journal of Chemical Theory and Computation",
+      "review": "Under consideration at The Journal of Physical Chemistry A",
       "year": 2026,
       "status": "preprint",
       "arxiv": "2606.05865",
@@ -45,7 +56,7 @@
       "title": "Periodic symmetry-adapted encoding: qubit reduction in crystalline electronic structure",
       "authors": ["Dario Picozzi"],
       "venue": "arXiv",
-      "review": "Under review at npj Quantum Information",
+      "review": "Under consideration at Scientific Reports",
       "year": 2026,
       "status": "preprint",
       "arxiv": "2606.05777",
